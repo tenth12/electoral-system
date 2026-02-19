@@ -4,6 +4,8 @@ import { JwtService } from '@nestjs/jwt';
 import { AuthDto } from './dto/auth.dto';
 import * as argon2 from 'argon2';
 import { ConfigService } from '@nestjs/config';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class AuthService {
@@ -11,6 +13,7 @@ export class AuthService {
         private usersService: UsersService,
         private jwtService: JwtService,
         private config: ConfigService,
+        private readonly httpService: HttpService,
     ) { }
 
     private normalizeEmail(email: string) {
@@ -59,6 +62,11 @@ export class AuthService {
     }
 
     async signIn(dto: AuthDto) {
+        // Validate Turnstile Token
+        if (dto.turnstileToken) {
+            await this.validateTurnstile(dto.turnstileToken);
+        }
+
         const email = this.normalizeEmail(dto.email);
 
         const user = await this.usersService.findByEmailWithSecrets(email);
@@ -105,4 +113,37 @@ export class AuthService {
         return { success: true };
     }
 
+
+    async validateTurnstile(token: string) {
+        const secretKey = this.config.get<string>('CLOUDFLARE_TURNSTILE_SECRET_KEY');
+        if (!secretKey) {
+            console.warn('CLOUDFLARE_TURNSTILE_SECRET_KEY not set. Skipping verification.');
+            return;
+        }
+
+        const verifyUrl = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
+        
+        try {
+            const { data } = await firstValueFrom(
+                this.httpService.post(verifyUrl, {
+                    secret: secretKey,
+                    response: token,
+                })
+            );
+
+            if (!data.success) {
+                throw new BadRequestException('Captcha verification failed');
+            }
+        } catch (error) {
+             // If the error is already a BadRequestException (from !data.success), rethrow it.
+             if (error instanceof BadRequestException) {
+                throw error;
+            }
+            console.error('Turnstile verification error:', error);
+            // Decide if you want to block login on error or fail open. 
+            // Here we fail closed for security, but ensure we don't block legitimate users on network issues if possible.
+            // For now, throw Unauthorized or BadRequest
+            throw new BadRequestException('Captcha verification failed');
+        }
+    }
 }

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Turnstile from 'react-turnstile';
 
 export default function Login() {
   const router = useRouter();
@@ -10,6 +11,7 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,7 +23,7 @@ export default function Login() {
       const res = await fetch(`${apiUrl}/auth/signin`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, turnstileToken }),
       });
 
       if (res.ok) {
@@ -87,6 +89,13 @@ export default function Login() {
               onChange={(e) => setPassword(e.target.value)}
               required
               className="w-full px-5 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-blue-300 focus:ring-4 focus:ring-blue-100 transition-all font-bold"
+            />
+          </div>
+
+          <div className="flex justify-center mb-4">
+            <Turnstile
+              sitekey="0x4AAAAAACfcnUOEVtyg9Xdy"
+              onVerify={(token) => setTurnstileToken(token)}
             />
           </div>
 
