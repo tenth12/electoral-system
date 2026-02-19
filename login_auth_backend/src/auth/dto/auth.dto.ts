@@ -8,6 +8,6 @@ export class AuthDto {
     @MinLength(8, { message: 'รหัสผ่านต้องยาวอย่างน้อย 8 ตัวอักษร' })
     password: string;
 
-    // Optional because we might not enforce it for all environments/users yet
+    @IsNotEmpty({ message: 'กรุณายืนยันตัวตน' })
     turnstileToken?: string;
 }

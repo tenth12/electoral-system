@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Turnstile from 'react-turnstile';
+import Navbar from '../../components/Navbar';
 
 export default function Login() {
   const router = useRouter();
@@ -58,61 +59,70 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center p-4">
-      <div className="bg-white w-full max-w-md rounded-3xl shadow-xl p-8 border border-white/50">
-        <h1 className="text-3xl font-black text-center text-slate-800 mb-2">Welcome Back! 👋</h1>
-        <p className="text-center text-slate-400 mb-8">เข้าสู่ระบบเพื่อจัดการคลังแสง</p>
-
-        {error && (
-          <div className="bg-red-50 text-red-500 p-3 rounded-lg mb-4 text-sm font-bold text-center">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-xs font-bold uppercase text-slate-400 mb-1 ml-1">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full px-5 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-blue-300 focus:ring-4 focus:ring-blue-100 transition-all font-bold"
-            />
-          </div>
-          
-          <div>
-            <label className="block text-xs font-bold uppercase text-slate-400 mb-1 ml-1">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full px-5 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-blue-300 focus:ring-4 focus:ring-blue-100 transition-all font-bold"
-            />
+    <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
+      <Navbar />
+      
+      <div className="flex-grow flex items-center justify-center p-4">
+        <div className="bg-white w-full max-w-md rounded-lg shadow-sm border border-slate-200 p-8">
+          <div className="text-center mb-8">
+            <h1 className="text-2xl font-bold text-slate-800">เข้าสู่ระบบ</h1>
+            <p className="text-slate-500 text-sm mt-2">โปรดระบุอีเมลและรหัสผ่านเพื่อยืนยันตัวตน</p>
           </div>
 
-          <div className="flex justify-center mb-4">
-            <Turnstile
-              sitekey="0x4AAAAAACfcnUOEVtyg9Xdy"
-              onVerify={(token) => setTurnstileToken(token)}
-            />
+          {error && (
+            <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6 text-sm">
+              <p className="font-bold">Error</p>
+              <p>{error}</p>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">อีเมลสถาบัน</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="w-full px-4 py-2 rounded-md border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                placeholder="example@university.ac.th"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">รหัสผ่าน</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="w-full px-4 py-2 rounded-md border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                placeholder="••••••••"
+              />
+            </div>
+
+            <div className="flex justify-center my-4">
+              <Turnstile
+                sitekey="0x4AAAAAACfcnUOEVtyg9Xdy"
+                onVerify={(token) => setTurnstileToken(token)}
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full py-2.5 bg-blue-900 hover:bg-blue-800 text-white font-medium rounded-md shadow-sm transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+            >
+              {isLoading ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ'}
+            </button>
+          </form>
+
+          <div className="mt-6 text-center text-sm text-slate-500 pt-6 border-t border-slate-100">
+            ยังไม่มีบัญชีผู้ใช้งาน?{' '}
+            <Link href="/auth/signup" className="text-blue-900 font-semibold hover:underline">
+              ลงทะเบียนใหม่
+            </Link>
           </div>
-
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full py-4 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-blue-200 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed mt-4"
-          >
-            {isLoading ? 'Loading...' : 'Login 🔐'}
-          </button>
-        </form>
-
-        <div className="mt-6 text-center text-sm text-slate-400">
-          ยังไม่มีบัญชี?{' '}
-          <Link href="/auth/signup" className="text-blue-500 font-bold hover:underline">
-            สมัครสมาชิก
-          </Link>
         </div>
       </div>
     </div>
