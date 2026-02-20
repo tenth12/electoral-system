@@ -45,7 +45,8 @@ git push -u origin main
    ```bash
    git clone https://github.com/tenth12/electoral-system.git
    cd electoral-system
-   npm install  # หรือ yarn install เพื่อลง dependencies
+   cd เข้าไปใน frontend และ login_auth_backend แล้ว
+   npm install ทั้งคู่ # หรือ yarn install เพื่อลง dependencies
    ```
 
 3. **ก่อนเริ่มงานทุกครั้ง (ดึงงานล่าสุด):**
