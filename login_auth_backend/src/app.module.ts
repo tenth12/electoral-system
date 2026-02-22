@@ -7,6 +7,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { VotesModule } from './votes/votes.module';
+import { CandidatesModule } from './candidates/candidates.module';
 
 @Module({
   imports: [ConfigModule.forRoot({
@@ -25,7 +26,7 @@ import { VotesModule } from './votes/votes.module';
     useFactory: (configService: ConfigService) => ({
       uri: configService.get<string>('MONGO_URI'),
     }),
-  }), UsersModule, AuthModule, VotesModule],
+  }), UsersModule, AuthModule, VotesModule, CandidatesModule],
   // controllers: [AppController],  ตัดออกไม่ได้ใช้
 
   // *** สำหรับการตั้งค่า global guard กรณีกันโดนยิง API รัว ๆ ทั้งระบบ ThrottlerGuard ***
