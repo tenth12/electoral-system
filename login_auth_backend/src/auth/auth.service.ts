@@ -72,6 +72,12 @@ export class AuthService {
         const user = await this.usersService.findByEmailWithSecrets(email);
         if (!user) throw new UnauthorizedException('อีเมลหรือรหัสผ่านไม่ถูกต้อง');
 
+        // Guard: argon2 hashes always start with '$argon2'. If not, the password
+        // was stored as plain text (e.g. manually inserted) and cannot be verified.
+        if (!user.passwordHash?.startsWith('$argon2')) {
+            throw new UnauthorizedException('อีเมลหรือรหัสผ่านไม่ถูกต้อง');
+        }
+
         const passwordMatches = await argon2.verify(user.passwordHash, dto.password);
         if (!passwordMatches) throw new UnauthorizedException('อีเมลหรือรหัสผ่านไม่ถูกต้อง');
 

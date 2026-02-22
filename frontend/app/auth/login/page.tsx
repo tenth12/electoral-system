@@ -119,12 +119,7 @@ export default function Login() {
             </button>
           </form>
 
-          <div className="mt-6 text-center text-sm text-slate-500 pt-6 border-t border-slate-100">
-            ยังไม่มีบัญชีผู้ใช้งาน?{' '}
-            <Link href="/auth/signup" className="text-blue-900 font-semibold hover:underline">
-              ลงทะเบียนใหม่
-            </Link>
-          </div>
+          
         </div>
       </div>
     </div>
