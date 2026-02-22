@@ -1,41 +1,52 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common'; // เพิ่ม NotFoundException
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Candidate, CandidateDocument } from './schemas/candidates.schema';
 import { User, UserDocument } from '../users/schemas/user.schema';
+import * as argon2 from 'argon2';
 
 @Injectable()
 export class CandidatesService {
   constructor(
     @InjectModel(Candidate.name) private candidateModel: Model<CandidateDocument>,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
-  ) {}
+  ) { }
 
-  // --- สมัครสมาชิกและลงเลือกตั้งในทีเดียว (Plain Text Password) ---
+  // 1. ฟังก์ชันค้นหาข้อมูลส่วนตัวผู้สมัคร (สำหรับหน้า Profile ของพรรคนั้นๆ)
+  async findOneByUserId(userId: string) {
+    // ใช้ populate เพื่อดึง email จาก User collection มาด้วย
+    const candidate = await this.candidateModel
+      .findOne({ userId: new Types.ObjectId(userId) })
+      .populate('userId', 'email')
+      .exec();
+
+    if (!candidate) {
+      throw new NotFoundException('ไม่พบข้อมูลผู้สมัครสำหรับผู้ใช้งานนี้');
+    }
+    return candidate;
+  }
+
+  // --- สมัครสมาชิกและลงเลือกตั้งในทีเดียว ---
   async signupAndApply(data: any) {
     const { email, password, displayName, slogan, bio, imageUrl } = data;
 
-    // 1. ตรวจสอบว่ามีอีเมลนี้ในระบบหรือยัง
-    const normalizedEmail = email.toLowerCase().trim();
+    const normalizedEmail = email.trim().toLowerCase();
+
     const existingUser = await this.userModel.findOne({ email: normalizedEmail });
     if (existingUser) {
-      throw new BadRequestException('อีเมลนี้ถูกใช้งานแล้ว กรุณาเข้าสู่ระบบเพื่อสมัคร');
+      throw new BadRequestException('Email นี้ถูกใช้งานแล้ว กรุณาเข้าสู่ระบบเพื่อสมัคร');
     }
 
-    // 2. ข้ามการแฮชรหัสผ่าน (ใช้ password ตรงๆ ตามระบบ Auth ของคุณ)
-    // เก็บเข้าฟิลด์ passwordHash เป็น Plain Text
-    const passwordHash = password; 
+    const passwordHash = await argon2.hash(password);
 
-    // 3. สร้าง User ใหม่
     const newUser = new this.userModel({
       email: normalizedEmail,
-      passwordHash: passwordHash, // เก็บ '123456' ลงไปตรงๆ
+      passwordHash: passwordHash,
       role: 'candidate',
-      // ถ้าใน Schema ไม่มี hasVoted ให้เอาออกนะครับ
+      refreshTokenHash: null,
     });
     const savedUser = await newUser.save();
 
-    // 4. บันทึกข้อมูลลงใน Candidate Collection
     const newCandidate = new this.candidateModel({
       userId: savedUser._id,
       displayName: displayName,
@@ -48,18 +59,19 @@ export class CandidatesService {
     await newCandidate.save();
 
     return {
-      message: 'ลงทะเบียนผู้สมัครสำเร็จแล้ว (Plain Text Mode)',
+      message: 'ลงทะเบียนผู้สมัครสำเร็จแล้ว กรุณาเข้าสู่ระบบเพื่อรับ Token',
       user: { email: savedUser.email, role: savedUser.role }
     };
   }
 
   // --- ฟังก์ชันเดิม (สำหรับคนที่มี ID อยู่แล้วมาสมัครเพิ่ม) ---
   async apply(userId: string, data: any) {
-    const existing = await this.candidateModel.findOne({ userId: new Types.ObjectId(userId) });
+    const userObjectId = new Types.ObjectId(userId);
+    const existing = await this.candidateModel.findOne({ userId: userObjectId });
     if (existing) throw new BadRequestException('คุณได้ลงสมัครรับเลือกตั้งไปแล้ว');
 
     const newCandidate = new this.candidateModel({
-      userId: new Types.ObjectId(userId),
+      userId: userObjectId,
       displayName: data.displayName,
       slogan: data.slogan,
       bio: data.bio,
@@ -72,5 +84,18 @@ export class CandidatesService {
 
   async findAll() {
     return this.candidateModel.find().populate('userId', 'email').exec();
+  }
+
+  async updateByUserId(userId: string, updateData: any) {
+    const updatedCandidate = await this.candidateModel.findOneAndUpdate(
+      { userId: new Types.ObjectId(userId) },
+      { $set: updateData },
+      { new: true } // คืนค่าข้อมูลตัวที่อัปเดตแล้วกลับมา
+    );
+
+    if (!updatedCandidate) {
+      throw new NotFoundException('ไม่พบข้อมูลผู้สมัครที่ต้องการแก้ไข');
+    }
+    return updatedCandidate;
   }
 }

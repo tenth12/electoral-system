@@ -40,6 +40,8 @@ export default function Login() {
             const payload = JSON.parse(atob(accessToken.split('.')[1]));
             if (payload.role === 'admin') {
                 router.push('/admin');
+            } else if (payload.role === 'candidate') {
+                router.push('/candidates/info');
             } else {
                 router.push('/vote');
             }
