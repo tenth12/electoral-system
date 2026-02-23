@@ -18,7 +18,7 @@ export default function Signup() {
 
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-      const res = await fetch(`${apiUrl}/auth/signup`, {
+      const res = await fetch(`${apiUrl}/auth/signup_admin`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -41,8 +41,6 @@ export default function Signup() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-blue-50 flex items-center justify-center p-4">
       <div className="bg-white w-full max-w-md rounded-3xl shadow-xl p-8 border border-white/50">
-        <h1 className="text-3xl font-black text-center text-slate-800 mb-2">Join Us! 🚀</h1>
-        <p className="text-center text-slate-400 mb-8">สมัครสมาชิกเพื่อจัดการไอเทมสุดเทพ</p>
 
         {error && (
           <div className="bg-red-50 text-red-500 p-3 rounded-lg mb-4 text-sm font-bold text-center">
