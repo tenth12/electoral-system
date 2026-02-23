@@ -56,6 +56,20 @@ export default function UsersPage() {
         }
     };
 
+    const handleDelete = async (id: string) => {
+        if (!confirm('Are you sure you want to delete this user?')) return;
+        try {
+            await adminService.deleteUser(id);
+            // Refresh users
+            const updatedUsers = users.filter(u => u._id !== id);
+            setUsers(updatedUsers);
+            alert('User deleted successfully');
+        } catch (error) {
+            alert('Failed to delete user');
+            console.error(error);
+        }
+    };
+
     if (isLoading) return <div>Loading...</div>;
 
     return (
@@ -96,6 +110,14 @@ export default function UsersPage() {
                                         className="text-slate-400 hover:text-blue-500 font-bold text-sm"
                                     >
                                         Edit
+                                    </button>
+                                </td>
+                                <td className="px-6 py-4">
+                                    <button 
+                                        onClick={() => handleDelete(user._id)}
+                                        className="text-slate-400 hover:text-red-500 font-bold text-sm"
+                                    >
+                                        Delete
                                     </button>
                                 </td>
                             </tr>

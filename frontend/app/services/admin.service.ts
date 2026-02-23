@@ -70,5 +70,13 @@ export const adminService = {
     });
     if (!res.ok) throw new Error('Failed to update user');
     return res.json();
+  },
+
+  deleteUser: async (id: string) => {
+    const res = await fetchWithAuth(`/users/${id}`, {
+        method: 'DELETE',
+    });
+    if (!res.ok) throw new Error('Failed to delete user');
+    return res.json();
   }
 };

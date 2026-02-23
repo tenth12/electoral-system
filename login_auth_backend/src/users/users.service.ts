@@ -53,4 +53,9 @@ export class UsersService {
     update(userId: string, data: Partial<User>) {
         return this.userModel.findByIdAndUpdate(userId, data, { new: true }).exec();
     }
+
+    // [New] Delete user
+    remove(userId: string) {
+        return this.userModel.findByIdAndDelete(userId).exec();
+    }
 }
