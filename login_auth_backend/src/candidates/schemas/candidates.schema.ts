@@ -9,8 +9,6 @@ export class Candidate {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true, unique: true })
   userId: Types.ObjectId | User;
 
-  // เพิ่ม candidateNumber สำหรับรันเลข 1, 2, 3
-  // index: true ช่วยให้ค้นหา/เรียงลำดับได้เร็วขึ้น
   @Prop({ required: true, unique: true, index: true })
   candidateNumber: number;
 
@@ -20,10 +18,6 @@ export class Candidate {
   @Prop({ required: true })
   slogan: string;
 
-  @Prop()
-  bio?: string;
-
-  // ส่วนของ Image URL (รองรับ String path ของรูปภาพ)
   @Prop({ default: '' })
   imageUrl?: string;
 

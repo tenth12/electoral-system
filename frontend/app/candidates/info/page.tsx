@@ -121,28 +121,27 @@ export default function CandidateDashboard() {
             <Navbar />
             
             <main className="max-w-4xl mx-auto px-4 py-12 w-full">
-                {/* Profile Card - ปรับให้โชว์ข้อมูลหลักครบในที่เดียว */}
-                <div className="bg-white rounded-[2rem] p-8 md:p-12 shadow-sm border border-slate-100 relative overflow-hidden">
+                <div className="bg-white rounded-[2.5rem] p-10 md:p-14 shadow-sm border border-slate-100 relative overflow-hidden">
                     
-                    {/* Badge หมายเลข */}
-                    <div className="absolute top-0 right-0 bg-blue-600 text-white px-10 py-5 rounded-bl-[2rem] shadow-lg flex flex-col items-center">
-                        <p className="text-[10px] font-bold uppercase tracking-widest opacity-80 mb-1">หมายเลข</p>
+                    {/* Badge หมายเลข - ดีไซน์ให้เด่นขึ้น */}
+                    <div className="absolute top-0 right-0 bg-slate-900 text-white px-12 py-6 rounded-bl-[2.5rem] shadow-xl flex flex-col items-center">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-60 mb-1">CANDIDATE NO.</p>
                         <p className="text-5xl font-black">{profile.candidateNumber}</p>
                     </div>
 
-                    <div className="flex flex-col items-center md:items-start gap-8">
+                    <div className="flex flex-col items-center md:items-start gap-10">
                         {/* รูปภาพพรรค */}
                         <div className="relative group">
-                            <div className="w-48 h-48 bg-slate-100 rounded-[2rem] overflow-hidden shadow-inner border-4 border-white ring-1 ring-slate-100">
+                            <div className="w-52 h-52 bg-slate-50 rounded-[2.5rem] overflow-hidden shadow-inner border-8 border-white ring-1 ring-slate-200">
                                 {previewUrl ? (
                                     <img src={previewUrl} alt="Candidate" className="w-full h-full object-cover" />
                                 ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-6xl">🏛️</div>
+                                    <div className="w-full h-full flex items-center justify-center text-7xl">🏛️</div>
                                 )}
                             </div>
                             {isEditing && (
-                                <label className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-[2rem] cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <span className="text-white text-xs font-bold bg-blue-600 px-4 py-2 rounded-full shadow-lg">เปลี่ยนรูปภาพ</span>
+                                <label className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-[2.5rem] cursor-pointer opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm">
+                                    <span className="text-white text-sm font-bold bg-blue-600 px-5 py-2.5 rounded-full shadow-2xl">เปลี่ยนรูปภาพ</span>
                                     <input type="file" className="hidden" onChange={handleFileChange} accept="image/*" />
                                 </label>
                             )}
@@ -151,71 +150,64 @@ export default function CandidateDashboard() {
                         {/* ข้อมูลพรรค */}
                         <div className="w-full">
                             {isEditing ? (
-                                <div className="space-y-4 max-w-xl">
-                                    <div>
-                                        <label className="text-xs font-bold text-slate-400 uppercase ml-1">ชื่อผู้สมัคร / ชื่อพรรค</label>
+                                <div className="space-y-6 max-w-xl">
+                                    <div className="group">
+                                        <label className="text-[10px] font-black text-blue-600 uppercase ml-1 tracking-widest">ชื่อผู้สมัคร / ชื่อพรรค</label>
                                         <input 
-                                            className="text-3xl font-bold w-full border-b-2 border-blue-500 outline-none p-2 bg-blue-50/30 rounded-t-lg"
+                                            className="text-3xl font-bold w-full border-b-2 border-slate-200 focus:border-blue-600 outline-none p-2 bg-transparent transition-colors"
                                             value={editForm.displayName}
                                             onChange={(e) => setEditForm({...editForm, displayName: e.target.value})}
                                         />
                                     </div>
-                                    <div>
-                                        <label className="text-xs font-bold text-slate-400 uppercase ml-1">สโลแกน</label>
+                                    <div className="group">
+                                        <label className="text-[10px] font-black text-blue-600 uppercase ml-1 tracking-widest">สโลแกน</label>
                                         <input 
-                                            className="text-xl text-blue-600 w-full border-b-2 border-blue-300 outline-none p-2 italic bg-blue-50/30 rounded-t-lg"
+                                            className="text-xl text-slate-600 w-full border-b-2 border-slate-200 focus:border-blue-600 outline-none p-2 italic bg-transparent transition-colors"
                                             value={editForm.slogan}
                                             onChange={(e) => setEditForm({...editForm, slogan: e.target.value})}
                                         />
                                     </div>
                                 </div>
                             ) : (
-                                <div className="space-y-2">
-                                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-green-50 text-green-600 text-xs font-bold rounded-full mb-2">
-                                        <span className="relative flex h-2 w-2">
-                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                                            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                                        </span>
-                                        สถานะ: กำลังเปิดรับลงคะแนน
-                                    </div>
-                                    <h1 className="text-5xl font-black text-slate-900 tracking-tight">{profile.displayName}</h1>
-                                    <p className="text-2xl text-blue-600 font-medium italic">"{profile.slogan}"</p>
+                                <div className="space-y-3">
+                                    <h1 className="text-6xl font-black text-slate-900 tracking-tighter leading-tight">
+                                        {profile.displayName}
+                                    </h1>
+                                    <p className="text-2xl text-blue-600 font-medium italic opacity-90 leading-relaxed">
+                                        "{profile.slogan}"
+                                    </p>
                                 </div>
                             )}
                         </div>
 
                         {/* ปุ่มกด */}
-                        <div className="flex gap-3 w-full md:w-auto pt-4">
+                        <div className="flex gap-4 w-full md:w-auto pt-6">
                             {isEditing ? (
                                 <>
-                                    <button onClick={handleSave} disabled={isSaving} className="flex-1 md:flex-none px-8 py-3 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all disabled:bg-slate-400">
-                                        {isSaving ? 'กำลังบันทึก...' : 'ยืนยันการแก้ไข'}
+                                    <button onClick={handleSave} disabled={isSaving} className="flex-1 md:flex-none px-10 py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 shadow-xl shadow-blue-200 transition-all active:scale-95 disabled:bg-slate-300">
+                                        {isSaving ? 'กำลังบันทึก...' : 'บันทึกการเปลี่ยนแปลง'}
                                     </button>
-                                    <button onClick={() => { setIsEditing(false); setPreviewUrl(profile.imageUrl); }} className="flex-1 md:flex-none px-8 py-3 bg-slate-100 text-slate-600 rounded-2xl font-bold hover:bg-slate-200 transition-all">
+                                    <button onClick={() => { setIsEditing(false); setPreviewUrl(profile.imageUrl); }} className="flex-1 md:flex-none px-10 py-4 bg-slate-100 text-slate-500 rounded-2xl font-bold hover:bg-slate-200 transition-all">
                                         ยกเลิก
                                     </button>
                                 </>
                             ) : (
-                                <button onClick={() => setIsEditing(true)} className="w-full md:w-auto px-10 py-4 border-2 border-slate-200 hover:border-blue-600 hover:text-blue-600 rounded-2xl font-bold transition-all text-lg">
-                                    แก้ไขข้อมูลพรรค
+                                <button onClick={() => setIsEditing(true)} className="w-full md:w-auto px-12 py-5 bg-white border-2 border-slate-200 text-slate-700 hover:border-slate-900 hover:text-slate-900 rounded-2xl font-black transition-all text-lg shadow-sm hover:shadow-md">
+                                    แก้ไขข้อมูลโปรไฟล์
                                 </button>
                             )}
                         </div>
                     </div>
 
-                    {/* สถิติแบบย่อด้านล่าง */}
-                    <div className="mt-12 pt-8 border-t border-slate-100 grid grid-cols-2 md:grid-cols-4 gap-6">
-                        <div>
-                            <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">คะแนนโหวต</p>
-                            <p className="text-3xl font-black text-blue-600">0</p>
+                    {/* Footer ย่อส่วน */}
+                    <div className="mt-16 pt-8 border-t border-slate-50 flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Verified Candidate</span>
                         </div>
-                        <div>
-                            <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">ลำดับปัจจุบัน</p>
-                            <p className="text-3xl font-black text-slate-800">--</p>
-                        </div>
-                        <div className="md:col-span-2 text-right self-end">
-                            <p className="text-xs text-slate-300">ลงทะเบียนเมื่อ {new Date(profile.appliedAt).toLocaleDateString('th-TH')}</p>
-                        </div>
+                        <p className="text-[10px] font-medium text-slate-300 uppercase tracking-tighter">
+                            Joined Since: {new Date(profile.appliedAt).toLocaleDateString('th-TH')}
+                        </p>
                     </div>
                 </div>
             </main>
