@@ -5,14 +5,18 @@ import { useRouter } from 'next/navigation';
 import { adminService } from '../services/admin.service';
 import Navbar from '../components/Navbar';
 
-interface User {
+// ปรับ Interface ให้ตรงกับข้อมูลจริง
+interface Candidate {
     _id: string;
-    email: string;
+    candidateNumber: number;
+    displayName: string;
+    slogan: string;
+    imageUrl: string;
 }
 
 export default function VotePage() {
     const router = useRouter();
-    const [candidates, setCandidates] = useState<User[]>([]);
+    const [candidates, setCandidates] = useState<Candidate[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [user, setUser] = useState<any>(null);
     const [hasVoted, setHasVoted] = useState(false);
@@ -23,9 +27,14 @@ export default function VotePage() {
                 const profile = await adminService.getProfile();
                 setUser(profile);
                 
-                // Fetch candidates
-                const data = await adminService.getCandidates();
-                setCandidates(data);
+                // 1. ดึงรายชื่อผู้สมัคร (แนะนำให้ใช้ API /candidates เพื่อเอาข้อมูล Candidate โดยตรง)
+                const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+                const res = await fetch(`${apiUrl}/candidates`);
+                if (res.ok) {
+                    const data = await res.json();
+                    // เรียงลำดับตามหมายเลข 1, 2, 3...
+                    setCandidates(data.sort((a: any, b: any) => a.candidateNumber - b.candidateNumber));
+                }
                 
             } catch (error) {
                 router.push('/auth/login');
@@ -63,66 +72,90 @@ export default function VotePage() {
         }
     };
 
-    if (isLoading) return <div className="min-h-screen bg-slate-50 flex items-center justify-center font-sans text-slate-600">กำลังโหลดข้อมูล...</div>;
+    if (isLoading) return <div className="min-h-screen bg-slate-50 flex items-center justify-center font-sans">กำลังโหลดข้อมูล...</div>;
 
     return (
         <div className="min-h-screen bg-slate-50 font-sans flex flex-col">
             <Navbar />
             
             <main className="flex-grow max-w-5xl w-full mx-auto p-6 md:p-8">
-                <header className="mb-10 text-center md:text-left border-b border-slate-200 pb-6">
-                    <h1 className="text-2xl md:text-3xl font-bold text-slate-800 mb-2">บัตรลงคะแนนเลือกตั้ง</h1>
-                    <p className="text-slate-500">
-                        ผู้ใช้สิทธิ: <span className="font-semibold text-slate-700">{user?.email}</span>
-                    </p>
+                <header className="mb-10 flex flex-col md:flex-row md:items-end justify-between border-b border-slate-200 pb-6 gap-4">
+                    <div>
+                        <h1 className="text-3xl font-black text-slate-800 mb-1">บัตรลงคะแนนอิเล็กทรอนิกส์</h1>
+                        <p className="text-slate-500 text-sm">ตรวจสอบข้อมูลผู้สมัครและเลือกคนที่คุณไว้วางใจ</p>
+                    </div>
+                    <div className="bg-white px-4 py-2 rounded-2xl shadow-sm border border-slate-100">
+                        <p className="text-xs text-slate-400 uppercase font-bold tracking-wider">ผู้ใช้สิทธิ</p>
+                        <p className="text-slate-700 font-semibold">{user?.email}</p>
+                    </div>
                 </header>
 
                 <div>
-                    <h2 className="text-lg font-semibold text-slate-700 mb-4 px-1 border-l-4 border-blue-900 pl-3">
-                        รายชื่อผู้สมัคร
-                    </h2>
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="h-8 w-2 bg-blue-900 rounded-full"></div>
+                        <h2 className="text-xl font-bold text-slate-800">รายชื่อผู้สมัครรับเลือกตั้ง</h2>
+                    </div>
                     
                     {candidates.length === 0 ? (
-                        <div className="text-center p-12 bg-white rounded-lg border border-slate-200 text-slate-400">
-                            ไม่พบรายชื่อผู้สมัคร
+                        <div className="text-center p-20 bg-white rounded-3xl border-2 border-dashed border-slate-200 text-slate-400">
+                            <p className="text-5xl mb-4">🗳️</p>
+                            <p>ขณะนี้ยังไม่มีผู้สมัครเปิดรับลงคะแนน</p>
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {candidates.map((candidate) => (
-                                <div key={candidate._id} className="bg-white p-6 rounded-lg shadow-sm border border-slate-200 hover:border-blue-300 transition-colors flex items-center justify-between">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-14 h-14 bg-slate-100 text-slate-400 text-xl flex items-center justify-center rounded-md border border-slate-200">
-                                            <span>รูป</span>
-                                        </div>
-                                        <div>
-                                            <h3 className="font-bold text-lg text-slate-800">{candidate.email}</h3>
-                                            <p className="text-xs text-slate-500 uppercase tracking-wide">ผู้สมัคร</p>
-                                        </div>
-                                    </div>
+                                <div key={candidate._id} className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-xl hover:shadow-blue-900/5 transition-all flex flex-col sm:flex-row items-center gap-6">
                                     
-                                    <button 
-                                        onClick={() => handleVote(candidate._id)}
-                                        disabled={hasVoted}
-                                        className={`px-6 py-2 rounded-md font-medium text-sm transition-colors border
-                                            ${hasVoted 
-                                                ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed' 
-                                                : 'bg-white text-blue-900 border-blue-900 hover:bg-blue-900 hover:text-white'
-                                            }`}
-                                    >
-                                        {hasVoted ? 'ใช้สิทธิแล้ว' : 'ลงคะแนน X'}
-                                    </button>
+                                    {/* หมายเลขผู้สมัคร */}
+                                    <div className="flex-shrink-0 w-20 h-20 bg-blue-900 text-white rounded-2xl flex flex-col items-center justify-center shadow-lg shadow-blue-200">
+                                        <span className="text-[10px] font-bold uppercase opacity-70">เบอร์</span>
+                                        <span className="text-3xl font-black">{candidate.candidateNumber}</span>
+                                    </div>
+
+                                    {/* รูปภาพผู้สมัคร */}
+                                    <div className="w-24 h-24 bg-slate-100 rounded-2xl overflow-hidden border border-slate-100 flex-shrink-0">
+                                        {candidate.imageUrl ? (
+                                            <img 
+                                                src={candidate.imageUrl} 
+                                                alt={candidate.displayName} 
+                                                className="w-full h-full object-cover" 
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center text-3xl">🏛️</div>
+                                        )}
+                                    </div>
+
+                                    {/* ข้อมูล */}
+                                    <div className="flex-grow text-center sm:text-left">
+                                        <h3 className="font-bold text-xl text-slate-800">{candidate.displayName}</h3>
+                                        <p className="text-blue-600 text-sm italic mb-4">"{candidate.slogan}"</p>
+                                        
+                                        <button 
+                                            onClick={() => handleVote(candidate._id)}
+                                            disabled={hasVoted}
+                                            className={`w-full sm:w-auto px-8 py-2.5 rounded-xl font-bold text-sm transition-all border-2
+                                                ${hasVoted 
+                                                    ? 'bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed' 
+                                                    : 'bg-white text-blue-900 border-blue-900 hover:bg-blue-900 hover:text-white active:scale-95'
+                                                }`}
+                                        >
+                                            {hasVoted ? 'ใช้สิทธิแล้ว' : 'ลงคะแนน X'}
+                                        </button>
+                                    </div>
                                 </div>
                             ))}
                         </div>
                     )}
                 </div>
 
-                <div className="mt-12 p-4 bg-yellow-50 border border-yellow-200 rounded-md text-sm text-yellow-800 flex items-start gap-3">
-                    <span className="text-xl">⚠️</span>
-                    <p>
-                        คำเตือน: การลงคะแนนสามารถทำได้เพียง 1 ครั้งเท่านั้น เมื่อกดยืนยันแล้วจะไม่สามารถแก้ไขผลการลงคะแนนได้
-                        กรุณาตรวจสอบความถูกต้องก่อนกดปุ่มยืนยัน
-                    </p>
+                <div className="mt-12 p-6 bg-red-50 border border-red-100 rounded-3xl flex items-start gap-4">
+                    <span className="text-2xl">⚠️</span>
+                    <div>
+                        <h4 className="font-bold text-red-900 mb-1">กฎการลงคะแนน</h4>
+                        <p className="text-sm text-red-700 leading-relaxed">
+                            คุณสามารถลงคะแนนได้เพียง 1 ครั้งต่อการเลือกตั้ง 1 รอบเท่านั้น ระบบจะบันทึกข้อมูลการโหวตของคุณเป็นความลับ แต่ไม่สามารถย้อนกลับมาแก้ไขได้หลังจากยืนยันไปแล้ว
+                        </p>
+                    </div>
                 </div>
             </main>
         </div>

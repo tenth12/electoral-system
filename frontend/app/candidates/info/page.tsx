@@ -5,9 +5,9 @@ import Navbar from '../../components/Navbar';
 
 interface CandidateProfile {
     _id: string;
+    candidateNumber: number;
     displayName: string;
     slogan: string;
-    bio: string;
     imageUrl: string;
     appliedAt: string;
 }
@@ -16,14 +16,15 @@ export default function CandidateDashboard() {
     const [profile, setProfile] = useState<CandidateProfile | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     
-    // --- เพิ่ม State สำหรับการแก้ไข ---
     const [isEditing, setIsEditing] = useState(false);
     const [editForm, setEditForm] = useState({
         displayName: '',
         slogan: '',
-        bio: '',
         imageUrl: ''
     });
+    
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState(false);
 
     const fetchMyProfile = async () => {
@@ -42,13 +43,12 @@ export default function CandidateDashboard() {
             if (res.ok) {
                 const data = await res.json();
                 setProfile(data);
-                // เตรียมข้อมูลใส่ Form เผื่อกดแก้ไข
                 setEditForm({
                     displayName: data.displayName,
                     slogan: data.slogan,
-                    bio: data.bio,
                     imageUrl: data.imageUrl
                 });
+                setPreviewUrl(data.imageUrl);
             }
         } catch (error) {
             console.error('Failed to fetch profile', error);
@@ -57,35 +57,54 @@ export default function CandidateDashboard() {
         }
     };
 
-    useEffect(() => {
-        fetchMyProfile();
-    }, []);
+    useEffect(() => { fetchMyProfile(); }, []);
 
-    // --- ฟังก์ชันสำหรับบันทึกข้อมูล ---
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            setSelectedFile(file);
+            setPreviewUrl(URL.createObjectURL(file));
+        }
+    };
+
     const handleSave = async () => {
         setIsSaving(true);
         try {
             const token = localStorage.getItem('accessToken');
             const payload = JSON.parse(atob(token!.split('.')[1]));
             const userId = payload.sub;
-
             const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+
+            let currentImageUrl = editForm.imageUrl;
+
+            if (selectedFile) {
+                const fileData = new FormData();
+                fileData.append('file', selectedFile);
+                const uploadRes = await fetch(`${apiUrl}/candidates/upload`, {
+                    method: 'POST',
+                    body: fileData
+                });
+                if (uploadRes.ok) {
+                    const uploadData = await uploadRes.json();
+                    currentImageUrl = uploadData.imageUrl;
+                }
+            }
+
             const res = await fetch(`${apiUrl}/candidates/user/${userId}`, {
-                method: 'PATCH', // หรือ PUT ตามที่ตั้งไว้ใน Backend
+                method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify(editForm)
+                body: JSON.stringify({ ...editForm, imageUrl: currentImageUrl })
             });
 
             if (res.ok) {
                 const updatedData = await res.json();
                 setProfile(updatedData);
                 setIsEditing(false);
+                setSelectedFile(null);
                 alert('อัปเดตข้อมูลสำเร็จ');
-            } else {
-                alert('เกิดข้อผิดพลาดในการบันทึก');
             }
         } catch (error) {
             console.error('Update failed', error);
@@ -98,121 +117,104 @@ export default function CandidateDashboard() {
     if (!profile) return <div className="text-center mt-20">ไม่พบข้อมูล</div>;
 
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col">
+        <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
             <Navbar />
             
             <main className="max-w-4xl mx-auto px-4 py-12 w-full">
-                {/* Header Section */}
-                <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100 mb-8">
-                    <div className="flex flex-col md:flex-row items-center gap-8">
-                        {/* Profile Image */}
-                        <div className="w-40 h-40 bg-blue-100 rounded-2xl overflow-hidden shadow-inner flex-shrink-0">
-                            {profile.imageUrl ? (
-                                <img src={profile.imageUrl} alt="Party Logo" className="w-full h-full object-cover" />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center text-5xl">🏛️</div>
+                {/* Profile Card - ปรับให้โชว์ข้อมูลหลักครบในที่เดียว */}
+                <div className="bg-white rounded-[2rem] p-8 md:p-12 shadow-sm border border-slate-100 relative overflow-hidden">
+                    
+                    {/* Badge หมายเลข */}
+                    <div className="absolute top-0 right-0 bg-blue-600 text-white px-10 py-5 rounded-bl-[2rem] shadow-lg flex flex-col items-center">
+                        <p className="text-[10px] font-bold uppercase tracking-widest opacity-80 mb-1">หมายเลข</p>
+                        <p className="text-5xl font-black">{profile.candidateNumber}</p>
+                    </div>
+
+                    <div className="flex flex-col items-center md:items-start gap-8">
+                        {/* รูปภาพพรรค */}
+                        <div className="relative group">
+                            <div className="w-48 h-48 bg-slate-100 rounded-[2rem] overflow-hidden shadow-inner border-4 border-white ring-1 ring-slate-100">
+                                {previewUrl ? (
+                                    <img src={previewUrl} alt="Candidate" className="w-full h-full object-cover" />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-6xl">🏛️</div>
+                                )}
+                            </div>
+                            {isEditing && (
+                                <label className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-[2rem] cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <span className="text-white text-xs font-bold bg-blue-600 px-4 py-2 rounded-full shadow-lg">เปลี่ยนรูปภาพ</span>
+                                    <input type="file" className="hidden" onChange={handleFileChange} accept="image/*" />
+                                </label>
                             )}
                         </div>
 
-                        {/* Basic Info */}
-                        <div className="flex-grow text-center md:text-left w-full">
-                            <div className="inline-block px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full mb-3">
-                                สถานะ: ผู้สมัครรับเลือกตั้ง
-                            </div>
-                            
+                        {/* ข้อมูลพรรค */}
+                        <div className="w-full">
                             {isEditing ? (
-                                <div className="space-y-3">
-                                    <input 
-                                        className="text-2xl font-bold w-full border-b-2 border-blue-500 outline-none p-1"
-                                        value={editForm.displayName}
-                                        onChange={(e) => setEditForm({...editForm, displayName: e.target.value})}
-                                        placeholder="ชื่อพรรค/ชื่อผู้สมัคร"
-                                    />
-                                    <input 
-                                        className="text-lg text-blue-600 w-full border-b border-blue-300 outline-none p-1 italic"
-                                        value={editForm.slogan}
-                                        onChange={(e) => setEditForm({...editForm, slogan: e.target.value})}
-                                        placeholder="สโลแกนพรรค"
-                                    />
+                                <div className="space-y-4 max-w-xl">
+                                    <div>
+                                        <label className="text-xs font-bold text-slate-400 uppercase ml-1">ชื่อผู้สมัคร / ชื่อพรรค</label>
+                                        <input 
+                                            className="text-3xl font-bold w-full border-b-2 border-blue-500 outline-none p-2 bg-blue-50/30 rounded-t-lg"
+                                            value={editForm.displayName}
+                                            onChange={(e) => setEditForm({...editForm, displayName: e.target.value})}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-bold text-slate-400 uppercase ml-1">สโลแกน</label>
+                                        <input 
+                                            className="text-xl text-blue-600 w-full border-b-2 border-blue-300 outline-none p-2 italic bg-blue-50/30 rounded-t-lg"
+                                            value={editForm.slogan}
+                                            onChange={(e) => setEditForm({...editForm, slogan: e.target.value})}
+                                        />
+                                    </div>
                                 </div>
                             ) : (
-                                <>
-                                    <h1 className="text-3xl font-bold text-slate-900 mb-2">{profile.displayName}</h1>
-                                    <p className="text-xl text-blue-600 font-medium italic">"{profile.slogan}"</p>
-                                </>
+                                <div className="space-y-2">
+                                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-green-50 text-green-600 text-xs font-bold rounded-full mb-2">
+                                        <span className="relative flex h-2 w-2">
+                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                                        </span>
+                                        สถานะ: กำลังเปิดรับลงคะแนน
+                                    </div>
+                                    <h1 className="text-5xl font-black text-slate-900 tracking-tight">{profile.displayName}</h1>
+                                    <p className="text-2xl text-blue-600 font-medium italic">"{profile.slogan}"</p>
+                                </div>
                             )}
                         </div>
 
-                        <div className="flex-shrink-0 flex gap-2">
+                        {/* ปุ่มกด */}
+                        <div className="flex gap-3 w-full md:w-auto pt-4">
                             {isEditing ? (
                                 <>
-                                    <button 
-                                        onClick={handleSave}
-                                        disabled={isSaving}
-                                        className="px-6 py-2 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all disabled:bg-slate-400"
-                                    >
-                                        {isSaving ? 'บันทึก...' : 'บันทึก'}
+                                    <button onClick={handleSave} disabled={isSaving} className="flex-1 md:flex-none px-8 py-3 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all disabled:bg-slate-400">
+                                        {isSaving ? 'กำลังบันทึก...' : 'ยืนยันการแก้ไข'}
                                     </button>
-                                    <button 
-                                        onClick={() => setIsEditing(false)}
-                                        className="px-6 py-2 border-2 border-slate-200 rounded-xl font-bold hover:bg-slate-50 transition-all"
-                                    >
+                                    <button onClick={() => { setIsEditing(false); setPreviewUrl(profile.imageUrl); }} className="flex-1 md:flex-none px-8 py-3 bg-slate-100 text-slate-600 rounded-2xl font-bold hover:bg-slate-200 transition-all">
                                         ยกเลิก
                                     </button>
                                 </>
                             ) : (
-                                <button 
-                                    onClick={() => setIsEditing(true)}
-                                    className="px-6 py-2 border-2 border-slate-200 hover:border-blue-600 hover:text-blue-600 rounded-xl font-bold transition-all"
-                                >
-                                    แก้ไขข้อมูล
+                                <button onClick={() => setIsEditing(true)} className="w-full md:w-auto px-10 py-4 border-2 border-slate-200 hover:border-blue-600 hover:text-blue-600 rounded-2xl font-bold transition-all text-lg">
+                                    แก้ไขข้อมูลพรรค
                                 </button>
                             )}
                         </div>
                     </div>
-                </div>
 
-                {/* Details Section */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div className="md:col-span-2 space-y-8">
-                        <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
-                            <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-                                📝 นโยบายและรายละเอียดพรรค
-                            </h3>
-                            {isEditing ? (
-                                <textarea 
-                                    className="w-full h-40 border-2 border-slate-200 rounded-xl p-4 outline-none focus:border-blue-500 transition-all"
-                                    value={editForm.bio}
-                                    onChange={(e) => setEditForm({...editForm, bio: e.target.value})}
-                                    placeholder="เขียนนโยบายหรือรายละเอียดพรรคที่นี่..."
-                                />
-                            ) : (
-                                <p className="text-slate-600 leading-relaxed whitespace-pre-wrap">
-                                    {profile.bio || 'ยังไม่ได้ระบุรายละเอียด'}
-                                </p>
-                            )}
+                    {/* สถิติแบบย่อด้านล่าง */}
+                    <div className="mt-12 pt-8 border-t border-slate-100 grid grid-cols-2 md:grid-cols-4 gap-6">
+                        <div>
+                            <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">คะแนนโหวต</p>
+                            <p className="text-3xl font-black text-blue-600">0</p>
                         </div>
-                    </div>
-
-                    <div className="space-y-6">
-                        <div className="bg-blue-900 rounded-3xl p-6 text-white shadow-lg">
-                            <h3 className="font-bold mb-4 opacity-80">ข้อมูลภาพรวม</h3>
-                            <div className="space-y-4">
-                                <div>
-                                    <p className="text-xs opacity-60">วันที่ลงสมัคร</p>
-                                    <p className="font-medium">{new Date(profile.appliedAt).toLocaleDateString('th-TH')}</p>
-                                </div>
-                                <div>
-                                    <p className="text-xs opacity-60">คะแนนเสียงปัจจุบัน</p>
-                                    <p className="text-2xl font-bold">-- คะแนน</p>
-                                </div>
-                            </div>
+                        <div>
+                            <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">ลำดับปัจจุบัน</p>
+                            <p className="text-3xl font-black text-slate-800">--</p>
                         </div>
-
-                        <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
-                            <p className="text-sm text-slate-500 text-center">
-                                หากต้องการสละสิทธิ์การเลือกตั้ง <br/>โปรดติดต่อเจ้าหน้าที่ดูแลระบบ
-                            </p>
+                        <div className="md:col-span-2 text-right self-end">
+                            <p className="text-xs text-slate-300">ลงทะเบียนเมื่อ {new Date(profile.appliedAt).toLocaleDateString('th-TH')}</p>
                         </div>
                     </div>
                 </div>
