@@ -11,7 +11,7 @@ import { Throttle } from '@nestjs/throttler';
 export class AuthController {
     constructor(private authService: AuthService) { }
 
-    @Post('signup')
+    @Post('signup_admin')
     signup(@Body() dto: AuthDto) {
         return this.authService.signUp(dto);
     }

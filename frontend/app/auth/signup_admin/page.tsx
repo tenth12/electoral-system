@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Turnstile from 'react-turnstile';
 
 export default function Signup() {
   const router = useRouter();
@@ -10,6 +11,7 @@ export default function Signup() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,7 +23,7 @@ export default function Signup() {
       const res = await fetch(`${apiUrl}/auth/signup_admin`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, turnstileToken }),
       });
 
       if (res.ok) {
@@ -56,7 +58,7 @@ export default function Signup() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-5 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-pink-300 focus:ring-4 focus:ring-pink-100 transition-all font-bold" // ❌ removed placeholder
+              className="w-full px-5 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-pink-300 focus:ring-4 focus:ring-pink-100 transition-all font-bold text-black" // ❌ removed placeholder
             />
           </div>
           
@@ -68,9 +70,16 @@ export default function Signup() {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={8}
-              className="w-full px-5 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-pink-300 focus:ring-4 focus:ring-pink-100 transition-all font-bold" // ❌ removed placeholder
+              className="w-full px-5 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:border-pink-300 focus:ring-4 focus:ring-pink-100 transition-all font-bold text-black" // ❌ removed placeholder
             />
             <p className="text-[10px] text-slate-400 mt-1 ml-1">* ต้องยาวอย่างน้อย 8 ตัวอักษร</p>
+          </div>
+
+          <div className="flex justify-center my-4">
+            <Turnstile
+              sitekey="0x4AAAAAACfcnUOEVtyg9Xdy"
+              onVerify={(token) => setTurnstileToken(token)}
+            />
           </div>
 
           <button
