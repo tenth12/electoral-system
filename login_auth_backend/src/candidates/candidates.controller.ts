@@ -6,37 +6,33 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname, join } from 'path';
 import { CandidatesService } from './candidates.service';
+import { CreateCandidateDto } from 'src/auth/dto/auth.dto';
 
 @Controller('candidates')
 export class CandidatesController {
   constructor(private readonly candidatesService: CandidatesService) {}
 
-  // --- ฟังก์ชันอัปโหลดรูปภาพ ---
-  // URL: POST /candidates/upload
   @Post('upload')
   @UseInterceptors(FileInterceptor('file', {
     storage: diskStorage({
-      destination: './uploads', // โฟลเดอร์ที่จะเก็บไฟล์
+      destination: './uploads', 
       filename: (req, file, cb) => {
-        // ตั้งชื่อไฟล์ใหม่เป็น timestamp + สุ่มตัวเลข เพื่อป้องกันชื่อซ้ำ
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
         cb(null, `${uniqueSuffix}${extname(file.originalname)}`);
       },
     }),
     fileFilter: (req, file, cb) => {
-      // ตรวจสอบประเภทไฟล์ (รับเฉพาะภาพ)
       if (!file.mimetype.match(/\/(jpg|jpeg|png)$/)) {
         return cb(new BadRequestException('รองรับเฉพาะไฟล์รูปภาพเท่านั้น!'), false);
       }
       cb(null, true);
     },
-    limits: { fileSize: 15 * 1024 * 1024 } // จำกัดขนาด 15MB
+    limits: { fileSize: 15 * 1024 * 1024 } 
   }))
   uploadFile(@UploadedFile() file: Express.Multer.File) {
     if (!file) {
       throw new BadRequestException('ไม่พบไฟล์ที่อัปโหลด');
     }
-    // ส่ง URL กลับไป (สมมติว่าคุณตั้งค่า Static assets ที่ /uploads)
     return { 
         imageUrl: `http://localhost:3000/uploads/${file.filename}` 
     };
@@ -53,7 +49,7 @@ export class CandidatesController {
   }
 
   @Post('signup')
-  async signup(@Body() body: any) {
+  async signup(@Body() body: CreateCandidateDto) { 
     return this.candidatesService.signupAndApply(body);
   }
 

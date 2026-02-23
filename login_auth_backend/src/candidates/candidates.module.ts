@@ -9,7 +9,7 @@ import { User, UserSchema } from '../users/schemas/user.schema';
   imports: [
     MongooseModule.forFeature([
       { name: Candidate.name, schema: CandidateSchema },
-      { name: User.name, schema: UserSchema }, // ต้องใส่เพื่อให้ InjectModel(User.name) ทำงานได้
+      { name: User.name, schema: UserSchema }, 
     ]),
   ],
   controllers: [CandidatesController],
