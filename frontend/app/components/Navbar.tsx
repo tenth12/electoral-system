@@ -33,6 +33,15 @@ export default function Navbar() {
           <div className="flex bg-slate-100/10 px-4 py-1 rounded-full text-sm font-light">
              คณะวิทยาการคอมพิวเตอร์
           </div>
+
+          <div className="flex bg-slate-500/10 px-4 py-1 rounded-full text-sm font-light">
+            <Link
+              href="/results"
+            >
+              ผลการเลือกตั้ง
+            </Link>
+          </div>
+
           <div>
             {isLoggedIn ? (
               <button
@@ -49,14 +58,6 @@ export default function Navbar() {
                 เข้าสู่ระบบ
               </Link>
             )}
-          </div>
-          <div className="flex items-center">
-            <Link
-              href="/results"
-              className="ml-4 px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-800 transition-colors"
-            >
-              ผลการเลือกตั้ง
-            </Link>
           </div>
         </div>
       </div>
