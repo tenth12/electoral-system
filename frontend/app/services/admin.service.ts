@@ -77,6 +77,15 @@ export const adminService = {
     return res.json();
   },
 
+  deleteCandidate: async (id: string) => {
+    const res = await fetchWithAuth(`/candidates/user/${id}`, {
+        method: 'DELETE',
+    });
+    // This endpoint handles both candidate and user deletion
+    if (!res.ok) throw new Error('Failed to delete candidate');
+    return res.json();
+  },
+
   getVotingStatus: async () => {
     const res = await fetchWithAuth('/settings/voting');
     if (!res.ok) throw new Error('Failed to fetch voting status');

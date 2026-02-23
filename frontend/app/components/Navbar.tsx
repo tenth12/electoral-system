@@ -50,6 +50,14 @@ export default function Navbar() {
               </Link>
             )}
           </div>
+          <div className="flex items-center">
+            <Link
+              href="/results"
+              className="ml-4 px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-800 transition-colors"
+            >
+              ผลการเลือกตั้ง
+            </Link>
+          </div>
         </div>
       </div>
     </nav>

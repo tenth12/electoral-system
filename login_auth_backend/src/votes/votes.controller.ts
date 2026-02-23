@@ -1,10 +1,14 @@
 import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { VotesService } from './votes.service';
 import { AccessTokenGuard } from '../auth/guards/access-token.guard';
+import { SettingsService } from '../settings/settings.service';
 
 @Controller('votes')
 export class VotesController {
-    constructor(private votesService: VotesService) {}
+    constructor(
+        private votesService: VotesService,
+        private settingsService: SettingsService
+    ) {}
 
     // POST /votes
     // Function: Cast a vote
@@ -36,5 +40,24 @@ export class VotesController {
         const userId = req.user.userId;
         const hasVoted = await this.votesService.checkUserVoted(userId);
         return { hasVoted };
+    }
+
+    // GET /votes/public-summary
+    // Function: Get vote summary for the public (only when voting is NOT active)
+    @Get('public-summary')
+    async getPublicSummary() {
+        const isVotingEnabled = await this.settingsService.getVotingStatus();
+        if (isVotingEnabled) {
+            return {
+                isVotingOpen: true,
+                message: 'การลงคะแนนกำลังดำเนินการอยู่ โปรดรอจนกว่าจะปิดหีบเพื่อดูผลการเลือกตั้ง'
+            };
+        }
+        
+        const summary = await this.votesService.getSummary();
+        return {
+            isVotingOpen: false,
+            data: summary
+        };
     }
 }

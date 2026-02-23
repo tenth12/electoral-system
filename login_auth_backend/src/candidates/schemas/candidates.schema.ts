@@ -21,6 +21,9 @@ export class Candidate {
   @Prop({ default: '' })
   imageUrl?: string;
 
+  @Prop({ default: '' })
+  description?: string;
+
   @Prop({ default: Date.now })
   appliedAt: Date;
 }

@@ -10,6 +10,7 @@ interface CandidateProfile {
     displayName: string;
     slogan: string;
     imageUrl: string;
+    description: string;
     appliedAt: string;
 }
 
@@ -25,7 +26,8 @@ function CandidateDashboardContent() {
     const [editForm, setEditForm] = useState({
         displayName: '',
         slogan: '',
-        imageUrl: ''
+        imageUrl: '',
+        description: ''
     });
     
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -56,7 +58,8 @@ function CandidateDashboardContent() {
                 setEditForm({
                     displayName: data.displayName,
                     slogan: data.slogan,
-                    imageUrl: data.imageUrl
+                    imageUrl: data.imageUrl,
+                    description: data.description || ''
                 });
                 setPreviewUrl(data.imageUrl);
             }
@@ -219,6 +222,15 @@ function CandidateDashboardContent() {
                                             onChange={(e) => setEditForm({...editForm, slogan: e.target.value})}
                                         />
                                     </div>
+                                    <div className="group">
+                                        <label className="text-[10px] font-black text-blue-600 uppercase ml-1 tracking-widest">คำอธิบายเพิ่มเติม</label>
+                                        <textarea 
+                                            className="text-lg text-slate-600 w-full border-b-2 border-slate-200 focus:border-blue-600 outline-none p-2 bg-transparent transition-colors resize-none"
+                                            rows={3}
+                                            value={editForm.description}
+                                            onChange={(e) => setEditForm({...editForm, description: e.target.value})}
+                                        />
+                                    </div>
                                 </div>
                             ) : (
                                 <div className="space-y-3">
@@ -228,6 +240,11 @@ function CandidateDashboardContent() {
                                     <p className="text-2xl text-blue-600 font-medium italic opacity-90 leading-relaxed">
                                         "{profile.slogan}"
                                     </p>
+                                    {profile.description && (
+                                        <p className="text-lg text-slate-600 leading-relaxed pt-4 border-t border-slate-100">
+                                            {profile.description}
+                                        </p>
+                                    )}
                                 </div>
                             )}
                         </div>

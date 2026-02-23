@@ -32,7 +32,7 @@ export class CandidatesService {
       throw new ForbiddenException('ระบบปิดรับสมัครแล้ว');
     }
 
-    const { email, password, displayName, slogan, imageUrl } = data;
+    const { email, password, displayName, slogan, description, imageUrl } = data;
 
     const normalizedEmail = email.trim().toLowerCase();
 
@@ -63,7 +63,7 @@ export class CandidatesService {
       displayName: displayName,
       slogan: slogan,
       bio: data.bio,
-      description: data.description || '', // Add description field
+      description: description || '', // Add description field
       imageUrl: imageUrl || '',
       appliedAt: new Date(),
     });
@@ -126,5 +126,19 @@ export class CandidatesService {
       throw new NotFoundException('ไม่พบข้อมูลผู้สมัครที่ต้องการแก้ไข');
     }
     return updatedCandidate;
+  }
+
+  async removeByUserId(userId: string) {
+    // 1. Delete Candidate profile
+    await this.candidateModel.findOneAndDelete({ userId: new Types.ObjectId(userId) }).exec();
+    
+    // 2. Delete User account
+    const deletedUser = await this.userModel.findByIdAndDelete(userId).exec();
+    
+    if (!deletedUser) {
+        throw new NotFoundException('ไม่พบบัญชีผู้ใช้งานนี้');
+    }
+
+    return { message: 'ลบข้อมูลผู้สมัครและบัญชีผู้ใช้งานเรียบร้อยแล้ว' };
   }
 }

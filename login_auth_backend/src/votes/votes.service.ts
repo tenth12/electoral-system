@@ -54,6 +54,20 @@ export class VotesService {
             },
             {
                 $lookup: {
+                    from: 'candidates',
+                    localField: '_id',
+                    foreignField: 'userId',
+                    as: 'candidateDetails',
+                },
+            },
+            {
+                $unwind: {
+                    path: '$candidateDetails',
+                    preserveNullAndEmptyArrays: true
+                },
+            },
+            {
+                $lookup: {
                     from: 'users',
                     localField: '_id',
                     foreignField: '_id',
@@ -61,7 +75,10 @@ export class VotesService {
                 },
             },
             {
-                $unwind: '$candidateInfo',
+                $unwind: {
+                    path: '$candidateInfo',
+                    preserveNullAndEmptyArrays: true
+                },
             },
             {
                 $project: {
@@ -69,6 +86,10 @@ export class VotesService {
                     count: 1,
                     'candidateInfo.email': 1,
                     'candidateInfo.role': 1,
+                    'candidateDetails.displayName': 1,
+                    'candidateDetails.slogan': 1,
+                    'candidateDetails.imageUrl': 1,
+                    'candidateDetails.candidateNumber': 1,
                 },
             },
         ]);

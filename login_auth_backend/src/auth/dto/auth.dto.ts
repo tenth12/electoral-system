@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, MinLength, IsOptional } from 'class-validator';
 
 export class AuthDto {
     @IsEmail({}, { message: 'รูปแบบอีเมลไม่ถูกต้อง' })
@@ -31,5 +31,9 @@ export class CreateCandidateDto {
     @IsString()
     @IsNotEmpty({ message: 'กรุณาระบุ URL รูปภาพ' })
     imageUrl: string;
+
+    @IsString()
+    @IsOptional()
+    description?: string;
 }
 

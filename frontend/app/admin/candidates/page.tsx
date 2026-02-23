@@ -9,6 +9,7 @@ interface User {
     email: string;
     role: string;
     createdAt: string;
+    displayName: string;
 }
 
 export default function CandidatesPage() {
@@ -54,6 +55,23 @@ export default function CandidatesPage() {
                             >
                                 View Profile
                             </button> 
+                            <button 
+                                onClick={async () => {
+                                    if (window.confirm(`Are you sure you want to delete candidate ${candidate.email}? This action cannot be undone.`)) {
+                                        try {
+                                            await adminService.deleteCandidate(candidate._id);
+                                            setCandidates(prev => prev.filter(c => c._id !== candidate._id));
+                                            alert('Candidate deleted successfully');
+                                        } catch (error) {
+                                            console.error('Error deleting candidate:', error);
+                                            alert('Failed to delete candidate');
+                                        }
+                                    }
+                                }}
+                                className="flex-1 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg font-bold text-sm transition-colors"
+                            >
+                                Delete
+                            </button>
                         </div>
                     </div>
                 ))}

@@ -15,7 +15,8 @@ export default function CandidateSignUpPage() {
         password: '',
         displayName: '',
         slogan: '',
-        imageUrl: ''
+        imageUrl: '',
+        description: ''
     });
     
     const [isVotingEnabled, setIsVotingEnabled] = useState(true);
@@ -197,6 +198,21 @@ export default function CandidateSignUpPage() {
                                     onChange={(e) => setFormData({ ...formData, slogan: e.target.value })}
                                     className="w-full border border-slate-200 p-3 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 transition-all resize-none text-black"
                                 />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">คำอธิบายเกี่ยวกับผู้สมัคร(เพิ่มเติ่มได้)</label>
+                                <textarea required rows={2} value={formData.description}
+                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                    className="w-full border border-slate-200 p-3 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 transition-all resize-none text-black"
+                                />
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-red-600">คำเตือน</h3>
+                                <p className="text-xs text-slate-500">รูปภาพที่ใช้จะต้องเป็นรูปภาพที่สุภาพและไม่ละเมิดลิขสิทธิ์ หากพบว่ารูปภาพที่ใช้ละเมิดลิขสิทธิ์จะถูกลบออกจากระบบ</p>
+                                <p className="text-xs text-slate-500">สโลแกนหรือนโยบายหลักที่ใช้จะต้องเป็นสโลแกนหรือนโยบายหลักที่สุภาพและไม่ละเมิดลิขสิทธิ์ หากพบว่าสโลแกนหรือนโยบายหลักที่ใช้ละเมิดลิขสิทธิ์จะถูกลบออกจากระบบ</p>
+                                <p className="text-xs text-slate-500">คำอธิบายเกี่ยวกับผู้สมัครที่ใช้จะต้องเป็นคำอธิบายเกี่ยวกับผู้สมัครที่สุภาพและไม่ละเมิดลิขสิทธิ์ หากพบว่าคำอธิบายเกี่ยวกับผู้สมัครที่ใช้ละเมิดลิขสิทธิ์จะถูกลบออกจากระบบ</p>
+                                <p className="text-xs text-slate-500">ชื่อผู้สมัคร/ชื่อพรรคที่ใช้จะต้องเป็นชื่อผู้สมัคร/ชื่อพรรคที่สุภาพและไม่ละเมิดลิขสิทธิ์ หากพบว่าชื่อผู้สมัคร/ชื่อพรรคที่ใช้ละเมิดลิขสิทธิ์จะถูกลบออกจากระบบ</p>
+                                <p className="text-xs text-slate-500">ห้ามซื้อเสียง เป็นการทำผิดกฎหมาย หากพบว่ามีการซื้อเสียงจะมีการดำเนินคดีตามกฎหมาย</p>
                             </div>
                         </section>
 

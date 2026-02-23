@@ -66,6 +66,11 @@ export class CandidatesController {
     return this.candidatesService.updateByUserId(userId, body);
   }
 
+  @Delete('user/:userId')
+  async removeUserAndCandidate(@Param('userId') userId: string) {
+    return this.candidatesService.removeByUserId(userId);
+  }
+
   @Get('user/:userId')
   async findOne(@Param('userId') userId: string) {
     return this.candidatesService.findOneByUserId(userId);
