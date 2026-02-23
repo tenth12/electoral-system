@@ -76,7 +76,7 @@ export default function CandidateSignUpPage() {
             const data = await res.json();
 
             if (res.ok) {
-                alert(`ลงทะเบียนสำเร็จ! คุณคือผู้สมัครหมายเลข: ${data.candidateNumber}`);
+                alert(`ลงทะเบียนสำเร็จ!`);
                 router.push('/auth/login');
             } else {
                 alert(data.message || 'การสมัครล้มเหลว กรุณาลองใหม่');
@@ -143,7 +143,7 @@ export default function CandidateSignUpPage() {
                                         เลือกรูปภาพพรรค/ผู้สมัคร
                                         <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
                                     </label>
-                                    <p className="text-[10px] text-slate-400 mt-2">ไฟล์ JPG, PNG ขนาดไม่เกิน 2MB</p>
+                                    <p className="text-[10px] text-slate-400 mt-2">ไฟล์ JPG, PNG ขนาดไม่เกิน 15MB</p>
                                 </div>
                             </div>
 

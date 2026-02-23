@@ -25,12 +25,12 @@ export class CandidatesController {
     }),
     fileFilter: (req, file, cb) => {
       // ตรวจสอบประเภทไฟล์ (รับเฉพาะภาพ)
-      if (!file.mimetype.match(/\/(jpg|jpeg|png|gif)$/)) {
+      if (!file.mimetype.match(/\/(jpg|jpeg|png)$/)) {
         return cb(new BadRequestException('รองรับเฉพาะไฟล์รูปภาพเท่านั้น!'), false);
       }
       cb(null, true);
     },
-    limits: { fileSize: 2 * 1024 * 1024 } // จำกัดขนาด 2MB
+    limits: { fileSize: 15 * 1024 * 1024 } // จำกัดขนาด 15MB
   }))
   uploadFile(@UploadedFile() file: Express.Multer.File) {
     if (!file) {
