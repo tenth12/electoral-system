@@ -62,6 +62,8 @@ export class CandidatesService {
       candidateNumber: nextNumber,
       displayName: displayName,
       slogan: slogan,
+      bio: data.bio,
+      description: data.description || '', // Add description field
       imageUrl: imageUrl || '',
       appliedAt: new Date(),
     });
@@ -95,6 +97,7 @@ export class CandidatesService {
       displayName: data.displayName,
       slogan: data.slogan,
       bio: data.bio,
+      description: data.description || '', // Add description field
       imageUrl: data.imageUrl,
     });
 
@@ -105,7 +108,7 @@ export class CandidatesService {
   async findAll() {
     return this.candidateModel
       .find()
-      .populate('userId', 'email')
+      .populate('userId', '_id email')
       .sort({ candidateNumber: 1 })
       .exec();
   }

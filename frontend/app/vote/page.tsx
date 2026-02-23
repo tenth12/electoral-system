@@ -12,6 +12,11 @@ interface Candidate {
     displayName: string;
     slogan: string;
     imageUrl: string;
+    description: string;
+    userId: {
+        _id: string;
+        email: string;
+    };
 }
 
 export default function VotePage() {
@@ -21,6 +26,8 @@ export default function VotePage() {
     const [user, setUser] = useState<any>(null);
     const [hasVoted, setHasVoted] = useState(false);
     const [isVotingEnabled, setIsVotingEnabled] = useState(true);
+    const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
         const init = async () => {
@@ -30,6 +37,7 @@ export default function VotePage() {
                 
                 // 1. ดึงรายชื่อผู้สมัคร (แนะนำให้ใช้ API /candidates เพื่อเอาข้อมูล Candidate โดยตรง)
                 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+                const token = localStorage.getItem('accessToken');
                 
                 // Get setting status
                 try {
@@ -40,6 +48,21 @@ export default function VotePage() {
                     }
                 } catch (e) {
                     console.error('Failed to get voting status', e);
+                }
+
+                // Check if user has already voted
+                try {
+                    const voteCheckRes = await fetch(`${apiUrl}/votes/check`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    if (voteCheckRes.ok) {
+                        const voteCheckData = await voteCheckRes.json();
+                        setHasVoted(voteCheckData.hasVoted);
+                    }
+                } catch (e) {
+                    console.error('Failed to check vote status', e);
                 }
 
                 const res = await fetch(`${apiUrl}/candidates`);
@@ -59,6 +82,16 @@ export default function VotePage() {
         init();
     }, [router]);
 
+    const handleOpenModal = (candidate: Candidate) => {
+        setSelectedCandidate(candidate);
+        setIsModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setSelectedCandidate(null);
+    };
+
     const handleVote = async (candidateId: string) => {
         if (!confirm('ยืนยันการลงคะแนนให้ผู้สมัครท่านนี้?')) return;
         
@@ -76,6 +109,7 @@ export default function VotePage() {
             if (res.ok) {
                 alert('ลงคะแนนเรียบร้อยแล้ว');
                 setHasVoted(true);
+                handleCloseModal();
             } else {
                 const data = await res.json();
                 alert(data.message || 'การลงคะแนนล้มเหลว');
@@ -142,17 +176,11 @@ export default function VotePage() {
                                     <div className="flex-grow text-center sm:text-left">
                                         <h3 className="font-bold text-xl text-slate-800">{candidate.displayName}</h3>
                                         <p className="text-blue-600 text-sm italic mb-4">"{candidate.slogan}"</p>
-                                        
-                                        <button 
-                                            onClick={() => handleVote(candidate._id)}
-                                            disabled={hasVoted || !isVotingEnabled}
-                                            className={`w-full sm:w-auto px-8 py-2.5 rounded-xl font-bold text-sm transition-all border-2
-                                                ${(hasVoted || !isVotingEnabled)
-                                                    ? 'bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed' 
-                                                    : 'bg-white text-blue-900 border-blue-900 hover:bg-blue-900 hover:text-white active:scale-95'
-                                                }`}
+                                        <button
+                                            onClick={() => handleOpenModal(candidate)}
+                                            className="w-full sm:w-auto px-8 py-2.5 rounded-xl font-bold text-sm transition-all border-2 bg-white text-blue-900 border-blue-900 hover:bg-blue-900 hover:text-white active:scale-95"
                                         >
-                                            {hasVoted ? 'ใช้สิทธิแล้ว' : (!isVotingEnabled ? 'ปิดโหวต' : 'ลงคะแนน X')}
+                                            ดูรายละเอียด
                                         </button>
                                     </div>
                                 </div>
@@ -181,6 +209,68 @@ export default function VotePage() {
                     </div>
                 </div>
             </main>
+
+            {/* Modal */}
+            {isModalOpen && selectedCandidate && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={handleCloseModal}>
+                    <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 relative" onClick={(e) => e.stopPropagation()}>
+                        {/* ปิด Modal */}
+                        <button
+                            onClick={handleCloseModal}
+                            className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-2xl font-bold"
+                        >
+                            ✕
+                        </button>
+
+                        {/* หมายเลขผู้สมัคร */}
+                        <div className="w-16 h-16 bg-blue-900 text-white rounded-2xl flex flex-col items-center justify-center shadow-lg shadow-blue-200 mx-auto mb-4">
+                            <span className="text-[10px] font-bold uppercase opacity-70">เบอร์</span>
+                            <span className="text-3xl font-black">{selectedCandidate.candidateNumber}</span>
+                        </div>
+
+                        {/* รูปภาพผู้สมัคร */}
+                        <div className="w-full h-48 bg-slate-100 rounded-2xl overflow-hidden border border-slate-100 flex items-center justify-center mb-6">
+                            {selectedCandidate.imageUrl ? (
+                                <img 
+                                    src={selectedCandidate.imageUrl} 
+                                    alt={selectedCandidate.displayName} 
+                                    className="w-full h-full object-cover" 
+                                />
+                            ) : (
+                                <div className="text-5xl">🏛️</div>
+                            )}
+                        </div>
+
+                        {/* ข้อมูลผู้สมัคร */}
+                        <div className="text-center">
+                            <h2 className="text-2xl font-bold text-slate-800 mb-2">{selectedCandidate.displayName}</h2>
+                            <p className="text-blue-600 text-lg italic mb-4">"{selectedCandidate.slogan}"</p>
+                            <p className="text-slate-600 text-sm mb-6 leading-relaxed">{selectedCandidate.description || 'ไม่มีข้อมูลเพิ่มเติม'}</p>
+                        </div>
+
+                        {/* ปุ่มการกระทำ */}
+                        <div className="flex gap-3">
+                            <button
+                                onClick={handleCloseModal}
+                                className="flex-1 px-4 py-2.5 rounded-xl font-bold text-sm transition-all border-2 bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200"
+                            >
+                                ปิด
+                            </button>
+                            <button
+                                onClick={() => handleVote(selectedCandidate.userId._id)}
+                                disabled={hasVoted || !isVotingEnabled}
+                                className={`flex-1 px-4 py-2.5 rounded-xl font-bold text-sm transition-all border-2
+                                    ${(hasVoted || !isVotingEnabled)
+                                        ? 'bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed' 
+                                        : 'bg-blue-900 text-white border-blue-900 hover:bg-blue-700'
+                                    }`}
+                            >
+                                {hasVoted ? 'ใช้สิทธิแล้ว' : (!isVotingEnabled ? 'ปิดโหวต' : 'ลงคะแนน')}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

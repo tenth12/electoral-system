@@ -135,6 +135,31 @@ function CandidateDashboardContent() {
         }
     };
 
+    const handleVote = async () => {
+        if (!confirm('ยืนยันการลงคะแนนให้ผู้สมัครท่านนี้?')) return;
+
+        try {
+            const token = localStorage.getItem('accessToken');
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/votes`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ candidateId: profile?._id })
+            });
+
+            if (res.ok) {
+                alert('ลงคะแนนเรียบร้อยแล้ว');
+            } else {
+                const data = await res.json();
+                alert(data.message || 'การลงคะแนนล้มเหลว');
+            }
+        } catch (error) {
+            alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
+        }
+    };
+
     if (isLoading) return <div className="min-h-screen flex items-center justify-center">กำลังโหลดข้อมูล...</div>;
     if (!profile) return <div className="text-center mt-20">ไม่พบข้อมูล</div>;
 

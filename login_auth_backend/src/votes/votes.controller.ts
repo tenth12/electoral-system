@@ -12,7 +12,7 @@ export class VotesController {
     @UseGuards(AccessTokenGuard)
     @Post()
     async castVote(@Req() req, @Body('candidateId') candidateId: string) {
-        const userId = req.user.sub; // AccessTokenGuard usually attaches user payload to req.user
+        const userId = req.user.userId; // AccessTokenGuard attaches user payload to req.user
         return this.votesService.vote(userId, candidateId);
     }
 
@@ -26,5 +26,15 @@ export class VotesController {
     @Get('summary')
     async getSummary() {
         return this.votesService.getSummary();
+    }
+
+    // GET /votes/check
+    // Function: Check if current user has already voted
+    @UseGuards(AccessTokenGuard)
+    @Get('check')
+    async checkVoted(@Req() req) {
+        const userId = req.user.userId;
+        const hasVoted = await this.votesService.checkUserVoted(userId);
+        return { hasVoted };
     }
 }

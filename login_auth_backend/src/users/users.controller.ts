@@ -27,7 +27,7 @@ export class UsersController {
     async findOne(@Req() req, @Param('id') id: string) {
         // Admin can view anyone, or user can view themselves?
         // Prompt says "admin... can view user accounts"
-        if (req.user.role !== 'admin' && req.user.sub !== id) {
+        if (req.user.role !== 'admin' && req.user.userId !== id) {
              throw new ForbiddenException('Access denied');
         }
         return this.usersService.findById(id);

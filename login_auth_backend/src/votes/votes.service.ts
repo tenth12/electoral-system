@@ -39,6 +39,11 @@ export class VotesService {
         return newVote.save();
     }
 
+    async checkUserVoted(voterId: string) {
+        const vote = await this.voteModel.findOne({ voter: voterId } as any);
+        return vote ? true : false;
+    }
+
     async getSummary() {
         return this.voteModel.aggregate([
             {
