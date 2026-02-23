@@ -8,6 +8,7 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { VotesModule } from './votes/votes.module';
 import { CandidatesModule } from './candidates/candidates.module';
+import { SettingsModule } from './settings/settings.module';
 
 @Module({
   imports: [ConfigModule.forRoot({
@@ -26,7 +27,7 @@ import { CandidatesModule } from './candidates/candidates.module';
     useFactory: (configService: ConfigService) => ({
       uri: configService.get<string>('MONGO_URI'),
     }),
-  }), UsersModule, AuthModule, VotesModule, CandidatesModule],
+  }), UsersModule, AuthModule, VotesModule, CandidatesModule, SettingsModule],
   // controllers: [AppController],  ตัดออกไม่ได้ใช้
 
   // *** สำหรับการตั้งค่า global guard กรณีกันโดนยิง API รัว ๆ ทั้งระบบ ThrottlerGuard ***

@@ -20,6 +20,7 @@ export default function VotePage() {
     const [isLoading, setIsLoading] = useState(true);
     const [user, setUser] = useState<any>(null);
     const [hasVoted, setHasVoted] = useState(false);
+    const [isVotingEnabled, setIsVotingEnabled] = useState(true);
 
     useEffect(() => {
         const init = async () => {
@@ -29,6 +30,18 @@ export default function VotePage() {
                 
                 // 1. ดึงรายชื่อผู้สมัคร (แนะนำให้ใช้ API /candidates เพื่อเอาข้อมูล Candidate โดยตรง)
                 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+                
+                // Get setting status
+                try {
+                    const statusRes = await fetch(`${apiUrl}/settings/voting`);
+                    if (statusRes.ok) {
+                        const statusData = await statusRes.json();
+                        setIsVotingEnabled(statusData.isVotingEnabled);
+                    }
+                } catch (e) {
+                    console.error('Failed to get voting status', e);
+                }
+
                 const res = await fetch(`${apiUrl}/candidates`);
                 if (res.ok) {
                     const data = await res.json();
@@ -132,14 +145,14 @@ export default function VotePage() {
                                         
                                         <button 
                                             onClick={() => handleVote(candidate._id)}
-                                            disabled={hasVoted}
+                                            disabled={hasVoted || !isVotingEnabled}
                                             className={`w-full sm:w-auto px-8 py-2.5 rounded-xl font-bold text-sm transition-all border-2
-                                                ${hasVoted 
+                                                ${(hasVoted || !isVotingEnabled)
                                                     ? 'bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed' 
                                                     : 'bg-white text-blue-900 border-blue-900 hover:bg-blue-900 hover:text-white active:scale-95'
                                                 }`}
                                         >
-                                            {hasVoted ? 'ใช้สิทธิแล้ว' : 'ลงคะแนน X'}
+                                            {hasVoted ? 'ใช้สิทธิแล้ว' : (!isVotingEnabled ? 'ปิดโหวต' : 'ลงคะแนน X')}
                                         </button>
                                     </div>
                                 </div>
@@ -147,6 +160,16 @@ export default function VotePage() {
                         </div>
                     )}
                 </div>
+
+                {!isVotingEnabled && (
+                    <div className="mt-8 p-6 bg-amber-50 border border-amber-200 rounded-3xl flex items-center justify-center">
+                        <span className="text-3xl mr-4">🔒</span>
+                        <div>
+                            <h4 className="font-bold text-amber-900 text-lg">ขณะนี้ระบบปิดรับการลงคะแนนเสียงแล้ว</h4>
+                            <p className="text-sm text-amber-700">ผู้ดูแลระบบได้ทำการปิดระบบการลงคะแนนชั่วคราว หรือการเลือกตั้งได้สิ้นสุดลงแล้ว</p>
+                        </div>
+                    </div>
+                )}
 
                 <div className="mt-12 p-6 bg-red-50 border border-red-100 rounded-3xl flex items-start gap-4">
                     <span className="text-2xl">⚠️</span>

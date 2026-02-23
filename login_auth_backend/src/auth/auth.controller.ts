@@ -17,7 +17,7 @@ export class AuthController {
     }
 
     // จำกัดการยิง signin เพื่อลด brute force
-    @Throttle({ default: { limit: 5, ttl: 60_000 } })
+    @Throttle({ default: { limit: 5, ttl: 30_000 } })
     @Post('signin')
     signin(@Body() dto: AuthDto) {
         return this.authService.signIn(dto);

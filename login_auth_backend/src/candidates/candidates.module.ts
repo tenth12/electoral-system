@@ -4,6 +4,7 @@ import { CandidatesController } from './candidates.controller';
 import { CandidatesService } from './candidates.service';
 import { Candidate, CandidateSchema } from './schemas/candidates.schema';
 import { User, UserSchema } from '../users/schemas/user.schema';
+import { SettingsModule } from '../settings/settings.module';
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { User, UserSchema } from '../users/schemas/user.schema';
       { name: Candidate.name, schema: CandidateSchema },
       { name: User.name, schema: UserSchema }, 
     ]),
+    SettingsModule,
   ],
   controllers: [CandidatesController],
   providers: [CandidatesService],

@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import Navbar from '../../components/Navbar';
+import { useSearchParams } from 'next/navigation';
 
 interface CandidateProfile {
     _id: string;
@@ -12,9 +13,13 @@ interface CandidateProfile {
     appliedAt: string;
 }
 
-export default function CandidateDashboard() {
+function CandidateDashboardContent() {
+    const searchParams = useSearchParams();
+    const queryId = searchParams.get('id');
+
     const [profile, setProfile] = useState<CandidateProfile | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [isOwnProfile, setIsOwnProfile] = useState(false);
     
     const [isEditing, setIsEditing] = useState(false);
     const [editForm, setEditForm] = useState({
@@ -26,6 +31,7 @@ export default function CandidateDashboard() {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState(false);
+    const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
     const fetchMyProfile = async () => {
         try {
@@ -33,10 +39,14 @@ export default function CandidateDashboard() {
             if (!token) return;
 
             const payload = JSON.parse(atob(token.split('.')[1]));
-            const userId = payload.sub;
+            const loggedInUserId = payload.sub;
+            
+            // If viewing someone else's profile via queryId, otherwise view own
+            const targetUserId = queryId || loggedInUserId;
+            setIsOwnProfile(targetUserId === loggedInUserId);
 
             const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-            const res = await fetch(`${apiUrl}/candidates/user/${userId}`, {
+            const res = await fetch(`${apiUrl}/candidates/user/${targetUserId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -87,6 +97,18 @@ export default function CandidateDashboard() {
                 if (uploadRes.ok) {
                     const uploadData = await uploadRes.json();
                     currentImageUrl = uploadData.imageUrl;
+                    
+                    // --- Delete old image if it exists and is different ---
+                    if (profile?.imageUrl && profile.imageUrl !== currentImageUrl) {
+                        try {
+                            await fetch(`${apiUrl}/candidates/image?imageUrl=${encodeURIComponent(profile.imageUrl)}`, {
+                                method: 'DELETE',
+                                headers: { 'Authorization': `Bearer ${token}` }
+                            });
+                        } catch (err) {
+                            console.error('Failed to delete old image', err);
+                        }
+                    }
                 }
             }
 
@@ -121,7 +143,7 @@ export default function CandidateDashboard() {
             <Navbar />
             
             <main className="max-w-4xl mx-auto px-4 py-12 w-full">
-                <div className="bg-white rounded-[2.5rem] p-10 md:p-14 shadow-sm border border-slate-100 relative overflow-hidden">
+                <div className="bg-blue-100 rounded-[2.5rem] p-10 md:p-14 shadow-sm border border-slate-100 relative overflow-hidden">
                     
                     {/* Badge หมายเลข - ดีไซน์ให้เด่นขึ้น */}
                     <div className="absolute top-0 right-0 bg-slate-900 text-white px-12 py-6 rounded-bl-[2.5rem] shadow-xl flex flex-col items-center">
@@ -134,7 +156,12 @@ export default function CandidateDashboard() {
                         <div className="relative group">
                             <div className="w-52 h-52 bg-slate-50 rounded-[2.5rem] overflow-hidden shadow-inner border-8 border-white ring-1 ring-slate-200">
                                 {previewUrl ? (
-                                    <img src={previewUrl} alt="Candidate" className="w-full h-full object-cover" />
+                                    <img 
+                                        src={previewUrl} 
+                                        alt="Candidate" 
+                                        className={`w-full h-full object-cover ${!isEditing ? 'cursor-pointer hover:scale-105 transition-transform' : ''}`}
+                                        onClick={() => !isEditing && setIsImageModalOpen(true)}
+                                    />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center text-7xl">🏛️</div>
                                 )}
@@ -154,7 +181,7 @@ export default function CandidateDashboard() {
                                     <div className="group">
                                         <label className="text-[10px] font-black text-blue-600 uppercase ml-1 tracking-widest">ชื่อผู้สมัคร / ชื่อพรรค</label>
                                         <input 
-                                            className="text-3xl font-bold w-full border-b-2 border-slate-200 focus:border-blue-600 outline-none p-2 bg-transparent transition-colors"
+                                            className="text-3xl font-bold w-full border-b-2 border-slate-200 focus:border-blue-600 outline-none p-2 bg-transparent transition-colors text-black"
                                             value={editForm.displayName}
                                             onChange={(e) => setEditForm({...editForm, displayName: e.target.value})}
                                         />
@@ -181,22 +208,24 @@ export default function CandidateDashboard() {
                         </div>
 
                         {/* ปุ่มกด */}
-                        <div className="flex gap-4 w-full md:w-auto pt-6">
-                            {isEditing ? (
-                                <>
-                                    <button onClick={handleSave} disabled={isSaving} className="flex-1 md:flex-none px-10 py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 shadow-xl shadow-blue-200 transition-all active:scale-95 disabled:bg-slate-300">
-                                        {isSaving ? 'กำลังบันทึก...' : 'บันทึกการเปลี่ยนแปลง'}
+                        {isOwnProfile && (
+                            <div className="flex gap-4 w-full md:w-auto pt-6">
+                                {isEditing ? (
+                                    <>
+                                        <button onClick={handleSave} disabled={isSaving} className="flex-1 md:flex-none px-10 py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 shadow-xl shadow-blue-200 transition-all active:scale-95 disabled:bg-slate-300">
+                                            {isSaving ? 'กำลังบันทึก...' : 'บันทึกการเปลี่ยนแปลง'}
+                                        </button>
+                                        <button onClick={() => { setIsEditing(false); setPreviewUrl(profile.imageUrl); }} className="flex-1 md:flex-none px-10 py-4 bg-slate-100 text-slate-500 rounded-2xl font-bold hover:bg-slate-200 transition-all">
+                                            ยกเลิก
+                                        </button>
+                                    </>
+                                ) : (
+                                    <button onClick={() => setIsEditing(true)} className="w-full md:w-auto px-12 py-5 bg-white border-2 border-slate-200 text-slate-700 hover:border-slate-900 hover:text-slate-900 rounded-2xl font-black transition-all text-lg shadow-sm hover:shadow-md">
+                                        แก้ไขข้อมูลโปรไฟล์
                                     </button>
-                                    <button onClick={() => { setIsEditing(false); setPreviewUrl(profile.imageUrl); }} className="flex-1 md:flex-none px-10 py-4 bg-slate-100 text-slate-500 rounded-2xl font-bold hover:bg-slate-200 transition-all">
-                                        ยกเลิก
-                                    </button>
-                                </>
-                            ) : (
-                                <button onClick={() => setIsEditing(true)} className="w-full md:w-auto px-12 py-5 bg-white border-2 border-slate-200 text-slate-700 hover:border-slate-900 hover:text-slate-900 rounded-2xl font-black transition-all text-lg shadow-sm hover:shadow-md">
-                                    แก้ไขข้อมูลโปรไฟล์
-                                </button>
-                            )}
-                        </div>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     {/* Footer ย่อส่วน */}
@@ -211,6 +240,37 @@ export default function CandidateDashboard() {
                     </div>
                 </div>
             </main>
+
+            {/* Modal ดูรูปภาพขนาดใหญ่ */}
+            {isImageModalOpen && previewUrl && (
+                <div 
+                    className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm"
+                    onClick={() => setIsImageModalOpen(false)}
+                >
+                    <div className="relative max-w-4xl max-h-[90vh] w-full h-full flex items-center justify-center">
+                        <button 
+                            className="absolute top-4 right-4 text-white hover:text-gray-300 bg-black/50 w-10 h-10 rounded-full flex items-center justify-center text-xl transition-colors"
+                            onClick={() => setIsImageModalOpen(false)}
+                        >
+                            ✕
+                        </button>
+                        <img 
+                            src={previewUrl} 
+                            alt="Candidate Fullsize" 
+                            className="max-w-full max-h-full object-contain rounded-2xl shadow-2xl border-4 border-white/10"
+                            onClick={(e) => e.stopPropagation()}
+                        />
+                    </div>
+                </div>
+            )}
         </div>
+    );
+}
+
+export default function CandidateDashboard() {
+    return (
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">กำลังโหลดข้อมูล...</div>}>
+            <CandidateDashboardContent />
+        </Suspense>
     );
 }

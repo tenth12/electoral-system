@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { adminService } from '../../services/admin.service';
+import { useRouter } from 'next/navigation';
 
 interface User {
     _id: string;
@@ -11,6 +12,7 @@ interface User {
 }
 
 export default function CandidatesPage() {
+    const router = useRouter();
     const [candidates, setCandidates] = useState<User[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -34,13 +36,8 @@ export default function CandidatesPage() {
 
     return (
         <div>
-            <div className="flex justify-between items-center mb-6">
-                <h2 className="text-3xl font-bold text-slate-800">Candidates</h2>
-                <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-bold shadow-lg shadow-blue-200 transition-all active:scale-95">
-                    + Add Candidate
-                </button>
-            </div>
-
+            <h1 className="text-3xl font-bold text-slate-800">Candidates</h1>
+            <br />
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {candidates.map((candidate) => (
                     <div key={candidate._id} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-center text-center hover:shadow-md transition-shadow">
@@ -51,9 +48,12 @@ export default function CandidatesPage() {
                         <p className="text-slate-400 text-sm mb-4">Candidate ID: {candidate._id.slice(-6)}</p>
                         
                         <div className="w-full flex gap-2">
-                            <button className="flex-1 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg font-bold text-sm transition-colors">
+                            <button 
+                                onClick={() => router.push(`/candidates/info?id=${candidate._id}`)}
+                                className="flex-1 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg font-bold text-sm transition-colors"
+                            >
                                 View Profile
-                            </button>
+                            </button> 
                         </div>
                     </div>
                 ))}

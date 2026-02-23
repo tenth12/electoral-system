@@ -48,7 +48,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Sidebar */}
       <aside className="w-64 bg-white shadow-xl z-10 flex flex-col">
         <div className="p-6 border-b border-slate-100">
-          <h1 className="text-2xl font-black text-slate-800 tracking-tight">Admin <span className="text-blue-500">Panel</span></h1>
+          <h1 onClick={() => router.push('/admin')} className="text-2xl font-black text-slate-800 tracking-tight">Admin <span className="text-blue-500">Panel</span></h1>
         </div>
         
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">

@@ -1,7 +1,8 @@
 import { 
   Controller, Post, Get, Body, Request, Param, Patch, 
-  UseInterceptors, UploadedFile, BadRequestException 
+  UseInterceptors, UploadedFile, BadRequestException, Delete, Query 
 } from '@nestjs/common';
+import * as fs from 'fs';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname, join } from 'path';
@@ -36,6 +37,28 @@ export class CandidatesController {
     return { 
         imageUrl: `http://localhost:3000/uploads/${file.filename}` 
     };
+  }
+
+  @Delete('image')
+  async deleteImage(@Query('imageUrl') imageUrl: string) {
+    if (!imageUrl) {
+        throw new BadRequestException('imageUrl is required');
+    }
+
+    try {
+        const filename = imageUrl.split('/uploads/')[1];
+        if (filename) {
+            const filePath = join(process.cwd(), 'uploads', filename);
+            if (fs.existsSync(filePath)) {
+                fs.unlinkSync(filePath);
+                return { message: 'Image deleted successfully' };
+            }
+        }
+        return { message: 'Image not found or already deleted' };
+    } catch (error) {
+        console.error('Error deleting image:', error);
+        throw new BadRequestException('Failed to delete image');
+    }
   }
 
   @Patch('user/:userId') 

@@ -19,9 +19,6 @@ async function fetchWithAuth(endpoint: string, options: FetchOptions = {}) {
   });
 
   if (res.status === 401) {
-    // Token might be expired. 
-    // For now, let's just redirect to login or clear token.
-    // In a real app, we would try to refresh token here.
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     window.location.href = '/auth/login';
@@ -77,6 +74,21 @@ export const adminService = {
         method: 'DELETE',
     });
     if (!res.ok) throw new Error('Failed to delete user');
+    return res.json();
+  },
+
+  getVotingStatus: async () => {
+    const res = await fetchWithAuth('/settings/voting');
+    if (!res.ok) throw new Error('Failed to fetch voting status');
+    return res.json();
+  },
+
+  setVotingStatus: async (isVotingEnabled: boolean) => {
+    const res = await fetchWithAuth('/settings/voting', {
+      method: 'PATCH',
+      body: JSON.stringify({ isVotingEnabled }),
+    });
+    if (!res.ok) throw new Error('Failed to update voting status');
     return res.json();
   }
 };

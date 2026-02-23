@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '../components/Navbar';
 
@@ -17,6 +17,24 @@ export default function CandidateSignUpPage() {
         slogan: '',
         imageUrl: ''
     });
+    
+    const [isVotingEnabled, setIsVotingEnabled] = useState(true);
+
+    useEffect(() => {
+        const checkStatus = async () => {
+            try {
+                const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+                const res = await fetch(`${apiUrl}/settings/voting`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setIsVotingEnabled(data.isVotingEnabled);
+                }
+            } catch (error) {
+                console.error("Failed to check status", error);
+            }
+        };
+        checkStatus();
+    }, []);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -28,6 +46,10 @@ export default function CandidateSignUpPage() {
 
     const handleSignUpCandidate = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!isVotingEnabled) {
+            return alert('ระบบปิดรับสมัครแล้ว');
+        }
 
         if (formData.password.length < 8) {
             return alert('รหัสผ่านต้องมีความยาวอย่างน้อย 8 ตัวอักษร');
@@ -98,7 +120,17 @@ export default function CandidateSignUpPage() {
                         <p className="text-indigo-100 text-sm">ตรวจสอบอีเมลและรหัสผ่านให้ถูกต้องก่อนสมัคร</p>
                     </div>
 
-                    <div className="p-8 space-y-6">
+                    {!isVotingEnabled && (
+                        <div className="bg-red-50 p-6 border-b border-red-100 flex items-center gap-4">
+                            <span className="text-3xl">⛔</span>
+                            <div>
+                                <h3 className="text-red-800 font-bold text-lg">ประกาศ: ปิดรับสมัคร</h3>
+                                <p className="text-red-700 text-sm">ขณะนี้ระบบปิดรับสมัครผู้ถูกเลือกตั้งแล้ว คุณไม่สามารถดำเนินการต่อได้</p>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className={`p-8 space-y-6 ${!isVotingEnabled ? 'opacity-50 pointer-events-none' : ''}`}>
 
                         <section className="space-y-4">
                             <div className="flex items-center space-x-2 border-b border-slate-100 pb-2">
@@ -114,7 +146,7 @@ export default function CandidateSignUpPage() {
                                         placeholder="example@mail.com"
                                         value={formData.email}
                                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                        className="w-full border border-slate-200 p-3 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                                        className="w-full border border-slate-200 p-3 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-black"
                                     />
                                 </div>
                                 <div>
@@ -126,7 +158,7 @@ export default function CandidateSignUpPage() {
                                         placeholder="รหัสผ่าน 8 ตัวขึ้นไป"
                                         value={formData.password}
                                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                        className="w-full border border-slate-200 p-3 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                                        className="w-full border border-slate-200 p-3 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-black"
                                     />
                                 </div>
                             </div>
@@ -144,7 +176,7 @@ export default function CandidateSignUpPage() {
                                     <div className="w-24 h-24 bg-white rounded-xl flex items-center justify-center text-3xl shadow-sm">🖼️</div>
                                 )}
                                 <div className="text-center">
-                                    <label className="cursor-pointer bg-white px-4 py-2 rounded-lg border border-slate-200 text-sm font-semibold hover:bg-slate-50 transition-all">
+                                    <label className="cursor-pointer bg-white px-4 py-2 rounded-lg border border-slate-200 text-sm font-semibold hover:bg-slate-50 transition-all text-black">
                                         เลือกรูปภาพพรรค/ผู้สมัคร
                                         <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
                                     </label>
@@ -156,22 +188,22 @@ export default function CandidateSignUpPage() {
                                 <label className="block text-xs font-bold text-slate-500 uppercase mb-1">ชื่อผู้สมัคร/ชื่อพรรค</label>
                                 <input required type="text" value={formData.displayName}
                                     onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
-                                    className="w-full border border-slate-200 p-3 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                                    className="w-full border border-slate-200 p-3 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-black"
                                 />
                             </div>
                             <div>
                                 <label className="block text-xs font-bold text-slate-500 uppercase mb-1">สโลแกนหรือนโยบายหลัก</label>
                                 <textarea required rows={2} value={formData.slogan}
                                     onChange={(e) => setFormData({ ...formData, slogan: e.target.value })}
-                                    className="w-full border border-slate-200 p-3 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 transition-all resize-none"
+                                    className="w-full border border-slate-200 p-3 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 transition-all resize-none text-black"
                                 />
                             </div>
                         </section>
 
                         <div className="pt-4">
-                            <button type="submit" disabled={isSubmitting}
+                            <button type="submit" disabled={isSubmitting || !isVotingEnabled}
                                 className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-2xl shadow-lg transition-all active:scale-[0.98] disabled:bg-slate-300 flex items-center justify-center space-x-2">
-                                {isSubmitting ? 'กำลังตรวจสอบข้อมูล...' : 'ลงทะเบียนและสมัครเลือกตั้ง'}
+                                {isSubmitting ? 'กำลังตรวจสอบข้อมูล...' : (!isVotingEnabled ? 'ปิดรับสมัคร' : 'ลงทะเบียนและสมัครเลือกตั้ง')}
                             </button>
                         </div>
                     </div>

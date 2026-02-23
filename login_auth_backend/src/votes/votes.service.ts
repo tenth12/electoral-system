@@ -1,17 +1,24 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Vote, VoteDocument } from './schemas/vote.schema';
 import { User } from '../users/schemas/user.schema';
+import { SettingsService } from '../settings/settings.service';
 
 @Injectable()
 export class VotesService {
     constructor(
         @InjectModel(Vote.name) private voteModel: Model<VoteDocument>,
         @InjectModel(User.name) private userModel: Model<User>,
+        private settingsService: SettingsService,
     ) {}
 
     async vote(voterId: string, candidateId: string) {
+        // Check if voting is enabled
+        const isVotingEnabled = await this.settingsService.getVotingStatus();
+        if (!isVotingEnabled) {
+            throw new ForbiddenException('ระบบปิดรับการลงคะแนนเสียงแล้ว');
+        }
         // Check if candidate exists and is effectively a candidate
         const candidate = await this.userModel.findById(candidateId);
         if (!candidate || candidate.role !== 'candidate') {

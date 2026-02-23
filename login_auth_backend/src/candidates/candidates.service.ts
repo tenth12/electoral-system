@@ -1,15 +1,17 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Candidate, CandidateDocument } from './schemas/candidates.schema';
 import { User, UserDocument } from '../users/schemas/user.schema';
 import * as argon2 from 'argon2';
+import { SettingsService } from '../settings/settings.service';
 
 @Injectable()
 export class CandidatesService {
   constructor(
     @InjectModel(Candidate.name) private candidateModel: Model<CandidateDocument>,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
+    private settingsService: SettingsService,
   ) { }
 
   async findOneByUserId(userId: string) {
@@ -25,6 +27,11 @@ export class CandidatesService {
   }
 
   async signupAndApply(data: any) {
+    const isVotingEnabled = await this.settingsService.getVotingStatus();
+    if (!isVotingEnabled) {
+      throw new ForbiddenException('ระบบปิดรับสมัครแล้ว');
+    }
+
     const { email, password, displayName, slogan, imageUrl } = data;
 
     const normalizedEmail = email.trim().toLowerCase();
@@ -69,6 +76,11 @@ export class CandidatesService {
   }
 
   async apply(userId: string, data: any) {
+    const isVotingEnabled = await this.settingsService.getVotingStatus();
+    if (!isVotingEnabled) {
+      throw new ForbiddenException('ระบบปิดรับสมัครแล้ว');
+    }
+
     const userObjectId = new Types.ObjectId(userId);
 
     const existing = await this.candidateModel.findOne({ userId: userObjectId });

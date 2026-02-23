@@ -4,6 +4,7 @@ import { VotesService } from './votes.service';
 import { VotesController } from './votes.controller';
 import { Vote, VoteSchema } from './schemas/vote.schema';
 import { User, UserSchema } from '../users/schemas/user.schema';
+import { SettingsModule } from '../settings/settings.module';
 
 @Module({
     imports: [
@@ -11,6 +12,7 @@ import { User, UserSchema } from '../users/schemas/user.schema';
             { name: Vote.name, schema: VoteSchema },
             { name: User.name, schema: UserSchema },
         ]),
+        SettingsModule,
     ],
     controllers: [VotesController],
     providers: [VotesService],
