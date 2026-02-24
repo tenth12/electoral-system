@@ -11,8 +11,8 @@ const sarabun = Sarabun({
 });
 
 export const metadata: Metadata = {
-  title: "ระบบเลือกตั้ง คณะวิทยาการคอมพิวเตอร์",
-  description: "ระบบเลือกตั้ง คณะวิทยาการคอมพิวเตอร์ ปี 2569",
+  title: "ระบบเลือกตั้ง สาขาวิทยาการคอมพิวเตอร์",
+  description: "ระบบเลือกตั้ง สาขาวิทยาการคอมพิวเตอร์ ปี 2569",
 };
 
 export default function RootLayout({

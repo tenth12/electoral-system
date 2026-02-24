@@ -31,7 +31,7 @@ export default function Navbar() {
             </Link>
           </div>
           <div className="flex bg-slate-100/10 px-4 py-1 rounded-full text-sm font-light">
-             คณะวิทยาการคอมพิวเตอร์
+             สาขาวิทยาการคอมพิวเตอร์
           </div>
 
           <div className="flex bg-slate-500/10 px-4 py-1 rounded-full text-sm font-light">

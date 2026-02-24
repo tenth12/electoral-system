@@ -19,7 +19,7 @@ export default function WelcomePage() {
             ระบบเลือกตั้งออนไลน์
           </h1>
           <h2 className="text-xl md:text-2xl font-medium text-slate-600 mb-12">
-            คณะวิทยาการคอมพิวเตอร์ ประจำปี 2569
+            สาขาวิทยาการคอมพิวเตอร์ ประจำปี 2569
           </h2>
 
           <div className="bg-white p-8 rounded-lg shadow-sm border border-slate-200 mb-8 max-w-lg mx-auto">
