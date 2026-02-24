@@ -48,10 +48,10 @@ export const adminService = {
     return res.json();
   },
 
-  // Mock for now if backend doesn't exist
   getCandidates: async () => {
-     // Ensure we assume backend has candidates filtered by role
-     return adminService.getUsers('candidate');
+     const res = await fetchWithAuth(`/candidates`);
+     if (!res.ok) throw new Error('Failed to fetch candidates');
+     return res.json();
   },
   
   getProfile: async () => {

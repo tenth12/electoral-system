@@ -12,17 +12,26 @@ interface User {
     displayName: string;
 }
 
+interface Candidate {
+    _id: string;
+    candidateNumber: number;
+    displayName: string;
+    slogan: string;
+    imageUrl?: string;
+    userId: User;
+}
+
 export default function CandidatesPage() {
     const router = useRouter();
-    const [candidates, setCandidates] = useState<User[]>([]);
+    const [candidates, setCandidates] = useState<Candidate[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const fetchCandidates = async () => {
             try {
-                // Actually filter by role=candidate via API or client side if API ignores it
-                const data = await adminService.getUsers('candidate');
-                setCandidates(data);
+                // Fetch directly from the /candidates endpoint to get displayName and other profile info
+                const res = await adminService.getCandidates();
+                setCandidates(res);
             } catch (error) {
                 console.error('Failed to fetch candidates', error);
             } finally {
@@ -42,24 +51,34 @@ export default function CandidatesPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {candidates.map((candidate) => (
                     <div key={candidate._id} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-center text-center hover:shadow-md transition-shadow">
-                        <div className="w-20 h-20 bg-pink-100 rounded-full flex items-center justify-center text-4xl mb-4">
-                            👔
+                        <div className="w-24 h-24 mb-4 rounded-full overflow-hidden border-4 border-slate-100 flex items-center justify-center bg-slate-50 relative group">
+                            {candidate.imageUrl ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                    src={candidate.imageUrl}
+                                    alt={candidate.displayName}
+                                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                                />
+                            ) : (
+                                <div className="text-4xl">👔</div>
+                            )}
                         </div>
-                        <h3 className="text-lg font-bold text-slate-800 mb-1">{candidate.email}</h3>
-                        <p className="text-slate-400 text-sm mb-4">Candidate ID: {candidate._id.slice(-6)}</p>
+                        <h3 className="text-lg font-bold text-slate-800 mb-1">{candidate.userId?.email || 'N/A'}</h3>
+                        <p className="text-slate-400 text-sm mb-4">Candidate Name: {candidate.displayName}</p>
+                        <p className="text-slate-400 text-sm mb-4">Candidate ID: {candidate.candidateNumber}</p>
                         
                         <div className="w-full flex gap-2">
                             <button 
-                                onClick={() => router.push(`/candidates/info?id=${candidate._id}`)}
+                                onClick={() => router.push(`/candidates/info?id=${candidate.userId?._id}`)}
                                 className="flex-1 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg font-bold text-sm transition-colors"
                             >
                                 View Profile
                             </button> 
                             <button 
                                 onClick={async () => {
-                                    if (window.confirm(`Are you sure you want to delete candidate ${candidate.email}? This action cannot be undone.`)) {
+                                    if (window.confirm(`Are you sure you want to delete candidate ${candidate.displayName}? This action cannot be undone.`)) {
                                         try {
-                                            await adminService.deleteCandidate(candidate._id);
+                                            await adminService.deleteCandidate(candidate.userId._id);
                                             setCandidates(prev => prev.filter(c => c._id !== candidate._id));
                                             alert('Candidate deleted successfully');
                                         } catch (error) {
