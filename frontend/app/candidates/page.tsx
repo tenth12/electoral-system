@@ -3,12 +3,14 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '../components/Navbar';
+import Turnstile from 'react-turnstile';
 
 export default function CandidateSignUpPage() {
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [turnstileToken, setTurnstileToken] = useState('');
 
     const [formData, setFormData] = useState({
         email: '',
@@ -60,6 +62,10 @@ export default function CandidateSignUpPage() {
             return alert('กรุณาอัปโหลดรูปภาพพรรค/ผู้สมัครก่อนทำการสมัคร');
         }
 
+        if (!turnstileToken) {
+            return alert('กรุณากดฉันไม่ใช่โปรแกรมอัตโนมัติก่อนทำการสมัคร');
+        }
+
         const confirmApply = confirm('ยืนยันการลงทะเบียนเป็นผู้สมัครรับเลือกตั้ง?');
         if (!confirmApply) return;
 
@@ -89,7 +95,8 @@ export default function CandidateSignUpPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     ...formData,
-                    imageUrl: finalImageUrl
+                    imageUrl: finalImageUrl,
+                    turnstileToken: turnstileToken
                 })
             });
 
@@ -163,6 +170,12 @@ export default function CandidateSignUpPage() {
                                     />
                                 </div>
                             </div>
+                            <div className="flex justify-center my-4">
+                                          <Turnstile
+                                            sitekey="0x4AAAAAACfcnUOEVtyg9Xdy"
+                                            onVerify={(token) => setTurnstileToken(token)}
+                                          />
+                                        </div>
                         </section>
                         <section className="space-y-4 pt-2">
                             <div className="flex items-center space-x-2 border-b border-slate-100 pb-2">

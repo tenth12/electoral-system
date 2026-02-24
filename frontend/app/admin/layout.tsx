@@ -16,12 +16,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       try {
         const profile = await adminService.getProfile();
         if (profile.role !== 'admin') {
-          router.push('/product'); // Or access denied page
+          router.push('/vote');
         } else {
           setIsAdmin(true);
         }
       } catch (error) {
-        router.push('/auth/login');
+        router.push('/vote');
       } finally {
         setIsLoading(false);
       }

@@ -237,13 +237,17 @@ function CandidateDashboardContent() {
                                     <h1 className="text-6xl font-black text-slate-900 tracking-tighter leading-tight">
                                         {profile.displayName}
                                     </h1>
-                                    <p className="text-2xl text-blue-600 font-medium italic opacity-90 leading-relaxed">
-                                        "{profile.slogan}"
-                                    </p>
+                                    <div className="text-2xl text-blue-600 font-medium italic opacity-90 leading-relaxed">
+                                        {profile.slogan.split('\n').map((line, i) => (
+                                            <p key={i}>{line}</p>
+                                        ))}
+                                    </div>
                                     {profile.description && (
-                                        <p className="text-lg text-slate-600 leading-relaxed pt-4 border-t border-slate-100">
-                                            {profile.description}
-                                        </p>
+                                        <div className="text-lg text-slate-600 leading-relaxed pt-4 border-t border-slate-100">
+                                            {profile.description.split('\n').map((line, i) => (
+                                                <p key={i}>{line}</p>
+                                            ))}
+                                        </div>
                                     )}
                                 </div>
                             )}

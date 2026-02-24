@@ -28,11 +28,24 @@ export default function VotePage() {
     const [isVotingEnabled, setIsVotingEnabled] = useState(true);
     const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
     useEffect(() => {
         const init = async () => {
             try {
                 const profile = await adminService.getProfile();
+                
+                // If the user is a candidate, they shouldn't be voting. Redirect them.
+                if (profile.role === 'candidate') {
+                    router.push('/candidates/info');
+                    return;
+                }
+
+                if (profile.role === 'admin') {
+                    router.push('/admin'); 
+                    return;
+                }
+
                 setUser(profile);
                 
                 // 1. ดึงรายชื่อผู้สมัคร (แนะนำให้ใช้ API /candidates เพื่อเอาข้อมูล Candidate โดยตรง)
@@ -175,7 +188,7 @@ export default function VotePage() {
                                     {/* ข้อมูล */}
                                     <div className="flex-grow text-center sm:text-left">
                                         <h3 className="font-bold text-xl text-slate-800">{candidate.displayName}</h3>
-                                        <p className="text-blue-600 text-sm italic mb-4">"{candidate.slogan}"</p>
+                                        <p className="text-blue-600 text-sm italic mb-4">{candidate.slogan}</p>
                                         <button
                                             onClick={() => handleOpenModal(candidate)}
                                             className="w-full sm:w-auto px-8 py-2.5 rounded-xl font-bold text-sm transition-all border-2 bg-white text-blue-900 border-blue-900 hover:bg-blue-900 hover:text-white active:scale-95"
@@ -212,7 +225,7 @@ export default function VotePage() {
 
             {/* Modal */}
             {isModalOpen && selectedCandidate && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={handleCloseModal}>
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4" onClick={handleCloseModal}>
                     <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 relative" onClick={(e) => e.stopPropagation()}>
                         {/* ปิด Modal */}
                         <button
@@ -229,13 +242,18 @@ export default function VotePage() {
                         </div>
 
                         {/* รูปภาพผู้สมัคร */}
-                        <div className="w-full h-48 bg-slate-100 rounded-2xl overflow-hidden border border-slate-100 flex items-center justify-center mb-6">
+                        <div className="w-full h-48 bg-slate-100 rounded-2xl overflow-hidden border border-slate-100 flex items-center justify-center mb-6 relative group cursor-pointer" onClick={() => {if(selectedCandidate?.imageUrl) setIsImageModalOpen(true)}}>
                             {selectedCandidate.imageUrl ? (
-                                <img 
-                                    src={selectedCandidate.imageUrl} 
-                                    alt={selectedCandidate.displayName} 
-                                    className="w-full h-full object-cover" 
-                                />
+                                <>
+                                    <img 
+                                        src={selectedCandidate.imageUrl} 
+                                        alt={selectedCandidate.displayName} 
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform" 
+                                    />
+                                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                        <span className="text-white bg-black/50 px-3 py-1 rounded-full text-sm">ดูรูปขนาดเต็ม</span>
+                                    </div>
+                                </>
                             ) : (
                                 <div className="text-5xl">🏛️</div>
                             )}
@@ -245,7 +263,15 @@ export default function VotePage() {
                         <div className="text-center">
                             <h2 className="text-2xl font-bold text-slate-800 mb-2">{selectedCandidate.displayName}</h2>
                             <p className="text-blue-600 text-lg italic mb-4">"{selectedCandidate.slogan}"</p>
-                            <p className="text-slate-600 text-sm mb-6 leading-relaxed">{selectedCandidate.description || 'ไม่มีข้อมูลเพิ่มเติม'}</p>
+                            <div className="text-left text-slate-600 text-sm mb-6 leading-relaxed">
+                                {selectedCandidate.description ? (
+                                    selectedCandidate.description.split('\n').map((line, i) => (
+                                        <p key={i}>{line}</p>
+                                    ))
+                                ) : (
+                                    'ไม่มีข้อมูลเพิ่มเติม'
+                                )}
+                            </div>
                         </div>
 
                         {/* ปุ่มการกระทำ */}
@@ -268,6 +294,28 @@ export default function VotePage() {
                                 {hasVoted ? 'ใช้สิทธิแล้ว' : (!isVotingEnabled ? 'ปิดโหวต' : 'ลงคะแนน')}
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+            {/* Modal ดูรูปภาพขนาดใหญ่ */}
+            {isImageModalOpen && selectedCandidate?.imageUrl && (
+                <div 
+                    className="fixed inset-0 z-[60] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm"
+                    onClick={(e) => { e.stopPropagation(); setIsImageModalOpen(false); }}
+                >
+                    <div className="relative max-w-4xl max-h-[90vh] w-full h-full flex items-center justify-center">
+                        <button 
+                            className="absolute top-4 right-4 text-white hover:text-gray-300 bg-black/50 w-10 h-10 rounded-full flex items-center justify-center text-xl transition-colors z-10"
+                            onClick={(e) => { e.stopPropagation(); setIsImageModalOpen(false); }}
+                        >
+                            ✕
+                        </button>
+                        <img 
+                            src={selectedCandidate.imageUrl} 
+                            alt={`${selectedCandidate.displayName} Fullsize`}
+                            className="max-w-full max-h-full object-contain rounded-2xl shadow-2xl border-4 border-white/10"
+                            onClick={(e) => e.stopPropagation()}
+                        />
                     </div>
                 </div>
             )}
