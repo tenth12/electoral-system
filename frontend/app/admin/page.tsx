@@ -66,7 +66,7 @@ export default function AdminDashboard() {
 
     return (
         <div>
-            <header className="mb-8 flex justify-between items-center">
+            <header className="mb-8 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
                 <div>
                     <h2 className="text-3xl font-bold text-slate-800">Dashboard Overview</h2>
                     <p className="text-slate-500">Welcome to the election system administration.</p>
@@ -74,7 +74,7 @@ export default function AdminDashboard() {
                 
                 {/* Voting System Toggle */}
                 {!isStatusLoading && (
-                    <div className="flex items-center gap-4 bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                    <div className="flex items-center gap-4 bg-white p-4 rounded-2xl shadow-sm border border-slate-100 self-start md:self-auto">
                         <div className="flex flex-col text-right">
                             <span className="text-sm font-bold text-slate-700">ระบบเลือกตั้งและรับสมัคร</span>
                             <span className={`text-xs font-medium ${isVotingEnabled ? 'text-green-600' : 'text-red-500'}`}>

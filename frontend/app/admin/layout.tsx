@@ -11,6 +11,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   useEffect(() => {
     const checkAdmin = async () => {
       try {
@@ -30,6 +32,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     checkAdmin();
   }, [router]);
 
+  // Close mobile menu when path changes
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
+
   if (isLoading) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
@@ -44,11 +51,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   ];
 
   return (
-    <div className="flex h-screen bg-slate-100">
+    <div className="flex h-screen bg-slate-100 overflow-hidden relative">
+      {/* Mobile Sidebar Overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-900/50 z-20 md:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-64 bg-white shadow-xl z-10 flex flex-col">
-        <div className="p-6 border-b border-slate-100">
-          <h1 onClick={() => router.push('/admin')} className="text-2xl font-black text-slate-800 tracking-tight">Admin <span className="text-blue-500">Panel</span></h1>
+      <aside className={`fixed md:static inset-y-0 left-0 w-64 bg-white shadow-xl z-30 flex flex-col transform transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+        <div className="p-6 border-b border-slate-100 flex justify-between items-center">
+          <h1 onClick={() => router.push('/admin')} className="text-2xl font-black text-slate-800 tracking-tight cursor-pointer">Admin <span className="text-blue-500">Panel</span></h1>
+          <button className="md:hidden text-slate-500" onClick={() => setIsMobileMenuOpen(false)}>
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          </button>
         </div>
         
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
@@ -85,13 +103,24 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto">
-        <div className="p-8">
-            <div className="max-w-7xl mx-auto">
-                {children}
-            </div>
+      <div className="flex-1 flex flex-col overflow-hidden w-full">
+        {/* Mobile Header Menu Button */}
+        <div className="md:hidden bg-white border-b border-slate-100 p-4 flex items-center shadow-sm">
+          <button 
+            onClick={() => setIsMobileMenuOpen(true)}
+            className="text-slate-600 hover:text-slate-900 focus:outline-none"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+          </button>
+          <span className="ml-4 font-bold text-slate-800 tracking-tight">Admin <span className="text-blue-500">Panel</span></span>
         </div>
-      </main>
+
+        <main className="flex-1 overflow-auto p-4 md:p-8">
+          <div className="max-w-7xl mx-auto">
+              {children}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

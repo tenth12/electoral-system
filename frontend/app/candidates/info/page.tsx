@@ -174,9 +174,9 @@ function CandidateDashboardContent() {
                 <div className="bg-blue-100 rounded-[2.5rem] p-10 md:p-14 shadow-sm border border-slate-100 relative overflow-hidden">
                     
                     {/* Badge หมายเลข - ดีไซน์ให้เด่นขึ้น */}
-                    <div className="absolute top-0 right-0 bg-slate-900 text-white px-12 py-6 rounded-bl-[2.5rem] shadow-xl flex flex-col items-center">
-                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-60 mb-1">CANDIDATE NO.</p>
-                        <p className="text-5xl font-black">{profile.candidateNumber}</p>
+                    <div className="absolute top-0 right-0 bg-slate-900 text-white px-6 py-4 md:px-12 md:py-6 rounded-bl-[2.0rem] md:rounded-bl-[2.5rem] shadow-xl flex flex-col items-center">
+                        <p className="text-[8px] md:text-[10px] font-bold uppercase tracking-[0.2em] opacity-60 mb-1">CANDIDATE NO.</p>
+                        <p className="text-3xl md:text-5xl font-black">{profile.candidateNumber}</p>
                     </div>
 
                     <div className="flex flex-col items-center md:items-start gap-10">

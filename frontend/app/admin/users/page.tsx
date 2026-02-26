@@ -79,7 +79,7 @@ export default function UsersPage() {
                 <div className="text-sm text-slate-500">Total: {users.length}</div>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-x-auto">
                 <table className="w-full text-left">
                     <thead className="bg-slate-50 border-b border-slate-100">
                         <tr>
@@ -93,8 +93,8 @@ export default function UsersPage() {
                     <tbody className="divide-y divide-slate-100">
                         {users.map((user) => (
                             <tr key={user._id} className="hover:bg-slate-50 transition-colors">
-                                <td className="px-6 py-4 text-slate-700 font-medium">{user.email}</td>
-                                <td className="px-6 py-4">
+                                <td className="px-6 py-4 text-slate-700 font-medium whitespace-nowrap">{user.email}</td>
+                                <td className="px-6 py-4 whitespace-nowrap">
                                     <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide
                                         ${user.role === 'admin' ? 'bg-purple-100 text-purple-600' : 
                                           user.role === 'candidate' ? 'bg-pink-100 text-pink-600' : 
@@ -102,10 +102,10 @@ export default function UsersPage() {
                                         {user.role}
                                     </span>
                                 </td>
-                                <td className="px-6 py-4 text-slate-500 text-sm">
+                                <td className="px-6 py-4 text-slate-500 text-sm whitespace-nowrap">
                                     {new Date(user.createdAt).toLocaleDateString()}
                                 </td>
-                                <td className="px-6 py-4">
+                                <td className="px-6 py-4 whitespace-nowrap">
                                     <button 
                                         onClick={() => handleEdit(user)}
                                         className="text-slate-400 hover:text-blue-500 font-bold text-sm"
@@ -113,7 +113,7 @@ export default function UsersPage() {
                                         Edit
                                     </button>
                                 </td>
-                                <td className="px-6 py-4">
+                                <td className="px-6 py-4 whitespace-nowrap">
                                     <button 
                                         onClick={() => handleDelete(user._id)}
                                         className="text-slate-400 hover:text-red-500 font-bold text-sm"
@@ -128,7 +128,7 @@ export default function UsersPage() {
             </div>
 
             {isModalOpen && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white p-6 rounded-2xl shadow-xl w-full max-w-md">
                         <h3 className="text-xl font-bold mb-4 text-slate-800">Edit User</h3>
                         <div className="mb-4">
